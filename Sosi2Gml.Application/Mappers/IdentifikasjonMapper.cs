@@ -7,14 +7,14 @@ namespace Sosi2Gml.Application.Mappers
     {
         public Identifikasjon Map(SosiObject sosiObject)
         {
-            if (!sosiObject.SosiValues.Has("..IDENT"))
+            if (!sosiObject.HasValue("..IDENT"))
                 return null;
 
             return new Identifikasjon
             {
-                LokalId = sosiObject.SosiValues.Get("...LOKALID"),
-                Navnerom = sosiObject.SosiValues.Get("...NAVNEROM"),
-                VersjonId = sosiObject.SosiValues.Get("...VERSJONID"),
+                LokalId = sosiObject.GetValue("...LOKALID"),
+                Navnerom = sosiObject.GetValue("...NAVNEROM"),
+                VersjonId = sosiObject.GetValue("...VERSJONID"),
             };
         }
     }

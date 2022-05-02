@@ -27,12 +27,12 @@ namespace Sosi2Gml.Reguleringsplanforslag.Mappers
                 Kvalitet = _kvalitetMapper.Map(sosiObject)
             };
 
-            var førsteDigitaliseringsdato = sosiObject.SosiValues.Get("..FØRSTEDIGITALISERINGSDATO");
+            var førsteDigitaliseringsdato = sosiObject.GetValue("..FØRSTEDIGITALISERINGSDATO");
 
             if (førsteDigitaliseringsdato != null)
                 rpFormålGrense.FørsteDigitaliseringsdato = SosiDateToDateTime(førsteDigitaliseringsdato);
 
-            rpFormålGrense.Oppdateringsdato = SosiDateToDateTime(sosiObject.SosiValues.Get("..OPPDATERINGSDATO"));
+            rpFormålGrense.Oppdateringsdato = SosiDateToDateTime(sosiObject.GetValue("..OPPDATERINGSDATO"));
 
             return rpFormålGrense;
         }

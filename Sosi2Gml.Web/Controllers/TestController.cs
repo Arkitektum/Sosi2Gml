@@ -29,6 +29,8 @@ namespace Sosi2Gml.Controllers
             var rpGrenserSosiObjects = sosiObjects[FeatureMemberName.RpGrense];
             var rpGrenser = rpGrenserSosiObjects.ConvertAll(rpGrense => _rpGrenseMapper.Map(rpGrense));
 
+            using var rpGrense = rpGrenser.First();
+
             return Ok();
         }
 
@@ -48,7 +50,7 @@ namespace Sosi2Gml.Controllers
 
             var sosiObjects = sosiLines
                 .Select(kvp => SosiObject.Create(kvp.Key, kvp.Value))
-                .GroupBy(sosiObject => sosiObject.SosiValues.Get("..OBJTYPE") ?? sosiObject.ElementType)
+                .GroupBy(sosiObject => sosiObject.GetValue("..OBJTYPE") ?? sosiObject.ElementType)
                 .ToDictionary(grouping => grouping.Key, grouping => grouping.Select(sosiObject => sosiObject).ToList());
 
             return sosiObjects;

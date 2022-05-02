@@ -1,5 +1,7 @@
 ﻿using Sosi2Gml.Application.Constants;
+using Sosi2Gml.Application.Helpers;
 using Sosi2Gml.Application.Models.Geometries;
+using System.Xml.Linq;
 
 namespace Sosi2Gml.Application.Models.Sosi
 {
@@ -10,17 +12,25 @@ namespace Sosi2Gml.Application.Models.Sosi
             SetPoints();
         }
 
+        public override XElement GetGeomElement()
+        {
+            var curveSegment = CartographicElementType == CartographicElementType.Kurve ? GmlHelper.CreateLineStringSegment(Points) : GmlHelper.CreateArc(Points);
+            var curve = GmlHelper.CreateCurve(new[] { curveSegment }, $"{GmlId}-0", SrsName);
+
+            return curve;
+        }
+
         public List<Point> Points { get; private set; }
 
         private void SetPoints()
         {
-            for (int i = 0; i < SosiValues.Values.Count; i++)
+            for (int i = 0; i < SosiValues.Lines.Count; i++)
             {
-                var value = SosiValues.Values[i];
+                var value = SosiValues.Lines[i];
 
                 if (Regexes.PointsStartRegex.IsMatch(value))
                 {
-                    var pointValues = SosiValues.Values.Skip(i);
+                    var pointValues = SosiValues.Lines.Skip(i);
                     var points = new List<Point>();
 
                     foreach (var pointValue in pointValues)

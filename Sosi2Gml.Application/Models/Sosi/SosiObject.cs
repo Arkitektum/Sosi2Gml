@@ -10,6 +10,22 @@ namespace Sosi2Gml.Application.Models.Sosi
         public int SequenceNumber { get; private set; }
         public SosiValues SosiValues { get; private set; }
 
+        public string GetValue(string key)
+        {
+            if (SosiValues == null)
+                return null;
+
+            return SosiValues.ObjectProperties.TryGetValue(key, out var value) ? value : null;
+        }
+
+        public bool HasValue(string key)
+        {
+            if (SosiValues == null)
+                return false;
+
+            return SosiValues.ObjectProperties.ContainsKey(key);
+        }
+
         public static SosiObject Create(string elementName, List<string> values)
         {
             var elementTypeMatch = _elementTypeRegex.Match(elementName);

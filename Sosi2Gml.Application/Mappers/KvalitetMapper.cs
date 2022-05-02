@@ -7,7 +7,7 @@ namespace Sosi2Gml.Application.Mappers
     {
         public Kvalitet Map(SosiObject sosiObject)
         {
-            var kvalitet = sosiObject.SosiValues.Get("..KVALITET");
+            var kvalitet = sosiObject.GetValue("..KVALITET");
 
             if (kvalitet == null)
                 return null;

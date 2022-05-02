@@ -6,6 +6,14 @@ namespace Sosi2Gml.Application.Helpers
 {
     public class GmlHelper
     {
+        public static XElement CreateXLink(XName name, string gmlId)
+        {
+            return new XElement(name,
+                new XAttribute(Namespace.XLinkNs + "type", "simple"),
+                new XAttribute(Namespace.XLinkNs + "href", $"#{gmlId}")
+            );
+        }
+
         public static XElement CreatePoint(Point point, string gmlId, string srsName)
         {
             return new XElement(Namespace.GmlNs + "Point",

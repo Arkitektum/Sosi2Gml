@@ -6,6 +6,6 @@
         {
         }
 
-        public List<Feature> GeoReferences { get; set; } = new();
+        public List<CurveReference> CurveReferences { get; set; } = new();
     }
 }

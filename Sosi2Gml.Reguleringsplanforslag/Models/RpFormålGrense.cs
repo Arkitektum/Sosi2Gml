@@ -3,7 +3,6 @@ using System.Xml.Linq;
 using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.MapperHelper;
-using Sosi2Gml.Application.Helpers;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -14,6 +13,7 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         }
 
         public override string FeatureName => "RpFormålGrense";
+        public override XElement GetGeomElement() => base.GetGeomElement();
 
         public override XElement ToGml()
         {
@@ -29,10 +29,7 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             if (Kvalitet != null)
                 featureMember.Add(Kvalitet.ToGml(AppNs));
 
-            var curveSegment = CartographicElementType == CartographicElementType.Kurve ? GmlHelper.CreateLineStringSegment(Points) : GmlHelper.CreateArc(Points);
-            var curve = GmlHelper.CreateCurve(new[] { curveSegment }, $"{GmlId}-0", SrsName);
-
-            featureMember.Add(new XElement(AppNs + "grense", curve));
+            featureMember.Add(new XElement(AppNs + "grense", GetGeomElement()));
 
             return featureMember;
         }

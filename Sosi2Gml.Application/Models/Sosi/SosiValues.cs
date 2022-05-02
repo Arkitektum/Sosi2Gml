@@ -7,24 +7,14 @@ namespace Sosi2Gml.Application.Models.Sosi
         private static readonly Regex _propertyRegex = new(@"^\.+((?!(NØ|REF)).)*$", RegexOptions.Compiled);
         private static readonly Regex _nameAndValueRegex = new(@"^(?<name>(\.+[A-ZÆØÅ-]+))( (?<value>.*))?", RegexOptions.Compiled);
 
-        private SosiValues(List<string> values, Dictionary<string, string> objectProperties)
+        private SosiValues(List<string> lines, Dictionary<string, string> objectProperties)
         {
-            Values = values;
+            Lines = lines;
             ObjectProperties = objectProperties;
         }
 
         public Dictionary<string, string> ObjectProperties { get; private set; } = new();
-        public List<string> Values { get; private set; } = new();
-
-        public string Get(string key)
-        {
-            return ObjectProperties.TryGetValue(key, out var value) ? value : null;
-        }
-
-        public bool Has(string key)
-        {
-            return ObjectProperties.ContainsKey(key);
-        }
+        public List<string> Lines { get; private set; } = new();
 
         public static SosiValues Create(List<string> values)
         {
