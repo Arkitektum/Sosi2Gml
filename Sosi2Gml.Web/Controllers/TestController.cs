@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Sosi2Gml.Application.Mappers.Interfaces;
 using Sosi2Gml.Application.Models.Sosi;
 using Sosi2Gml.Reguleringsplanforslag.Constants;
+using Sosi2Gml.Reguleringsplanforslag.Mappers;
 using Sosi2Gml.Reguleringsplanforslag.Mappers.Interfaces;
 using Sosi2Gml.Reguleringsplanforslag.Models;
 using System.Text;
@@ -17,22 +18,31 @@ namespace Sosi2Gml.Controllers
 
         private readonly IGmlFeatureMapper<RpGrense> _rpGrenseMapper;
         private readonly IGmlFeatureMapper<RpFormålGrense> _rpFormålGrenseMapper;
+        private readonly IGmlFeatureMapper<RpSikringGrense> _rpSikringGrenseMapper;
         private readonly IGmlSurfaceFeatureMapper<RpOmråde, RpGrense> _rpOmrådeMapper;
         private readonly IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense> _rpArealformålOmrådeMapper;
+        private readonly IGmlSurfaceFeatureMapper<RpSikringSone, RpSikringGrense> _rpSikringSoneMapper;
         private readonly IGmlFeatureMapper<RpJuridiskPunkt> _rpJuridiskPunktMapper;
+        private readonly IRpHensynGrenseMapper _rpHensynGrenseMapper;
 
         public TestController(
              IGmlFeatureMapper<RpGrense> rpGrenseMapper,
              IGmlFeatureMapper<RpFormålGrense> rpFormålGrenseMapper,
+             //IGmlFeatureMapper<RpSikringGrense> rpSikringGrenseMapper,
              IGmlSurfaceFeatureMapper<RpOmråde, RpGrense> rpOmrådeMapper,
              IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense> rpArealformålOmrådeMapper,
-             IGmlFeatureMapper<RpJuridiskPunkt> rpJuridiskPunktMapper)
+             IGmlSurfaceFeatureMapper<RpSikringSone, RpSikringGrense> rpSikringSoneMapper,
+             IGmlFeatureMapper<RpJuridiskPunkt> rpJuridiskPunktMapper,
+             IRpHensynGrenseMapper rpHensynGrenseMapper)
         {
             _rpGrenseMapper = rpGrenseMapper;
             _rpFormålGrenseMapper = rpFormålGrenseMapper;
+           // _rpSikringGrenseMapper = rpSikringGrenseMapper;
             _rpOmrådeMapper = rpOmrådeMapper;
             _rpArealformålOmrådeMapper = rpArealformålOmrådeMapper;
             _rpJuridiskPunktMapper = rpJuridiskPunktMapper;
+            _rpSikringSoneMapper = rpSikringSoneMapper;
+            _rpHensynGrenseMapper = rpHensynGrenseMapper;
         }
 
         [HttpPost]
@@ -44,7 +54,15 @@ namespace Sosi2Gml.Controllers
             var sosiObjects = await ReadSosiFileAsync(sosiFile);
             var hode = sosiObjects.First();
 
-            var rpJuridiskPunktObjects = sosiObjects[FeatureMemberName.RpJuridiskPunkt];
+            var rpSikringGrenseObjects = sosiObjects["RpSikringGrense"];
+            var rpSikringGrenser = rpSikringGrenseObjects.ConvertAll(sosiObject => _rpHensynGrenseMapper.Map<RpSikringGrense>(sosiObject, SrsName, DecimalPlaces));
+
+            var rpSikringSoneObjects = sosiObjects["RpSikringSone"];
+            var rpSikringSoner = rpSikringSoneObjects.ConvertAll(sosiObject => _rpSikringSoneMapper.Map(sosiObject, SrsName, DecimalPlaces, rpSikringGrenser));
+
+            var b = rpSikringSoner;
+
+            /*var rpJuridiskPunktObjects = sosiObjects[FeatureMemberName.RpJuridiskPunkt];
             var rpJuridiskePunkt = rpJuridiskPunktObjects.ConvertAll(sosiObject => _rpJuridiskPunktMapper.Map(sosiObject, SrsName, DecimalPlaces));
 
             var rpGrenseSosiObjects = sosiObjects[FeatureMemberName.RpGrense];
@@ -59,7 +77,13 @@ namespace Sosi2Gml.Controllers
             var rpArealformålOmrådeSosiObjects = sosiObjects[FeatureMemberName.RpArealformålOmråde];
             var rpArealformålOmråder = rpArealformålOmrådeSosiObjects.ConvertAll(rpArealformålOmråde => _rpArealformålOmrådeMapper.Map(rpArealformålOmråde, SrsName, DecimalPlaces, rpFormålGrenser));
 
-            var b = rpArealformålOmråder.First();
+            var rpSikringGrenseObjects = sosiObjects["RpSikringGrense"];
+            var rpSikringGrenser = rpSikringGrenseObjects.ConvertAll(sosiObject => _rpSikringGrenseMapper.Map(sosiObject, SrsName, DecimalPlaces));
+
+            var rpSikringSoneObjects = sosiObjects["RpSikringSone"];
+            var rpSikringSoner = rpSikringGrenseObjects.ConvertAll(sosiObject => _rpSikringSoneMapper.Map(sosiObject, SrsName, DecimalPlaces, rpSikringGrenser));
+
+            var b = rpArealformålOmråder.First();*/
 
             return Ok();
         }

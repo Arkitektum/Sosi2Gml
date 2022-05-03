@@ -4,7 +4,8 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
     public abstract class RpHensynSone : SurfaceFeature
     {
-        protected RpHensynSone(SosiObject sosiObject, string srsName, int decimalPlaces) : base(sosiObject, srsName, decimalPlaces, null)
+        protected RpHensynSone(SosiObject sosiObject, string srsName, int decimalPlaces, IEnumerable<CurveFeature> curveFeatures) : 
+            base(sosiObject, srsName, decimalPlaces, curveFeatures)
         {
             
         
