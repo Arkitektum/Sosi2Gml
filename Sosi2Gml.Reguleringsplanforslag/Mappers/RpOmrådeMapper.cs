@@ -5,12 +5,12 @@ using static Sosi2Gml.Application.Helpers.MapperHelper;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Mappers
 {
-    public class RpGrenseMapper : IGmlFeatureMapper<RpGrense>
+    public class RpOmrådeMapper : IGmlSurfaceFeatureMapper<RpOmråde, RpGrense>
     {
         private readonly IGmlElementMapper<Identifikasjon> _identifikasjonMapper;
         private readonly IGmlElementMapper<Kvalitet> _kvalitetMapper;
 
-        public RpGrenseMapper(
+        public RpOmrådeMapper(
             IGmlElementMapper<Identifikasjon> identifikasjonMapper,
             IGmlElementMapper<Kvalitet> kvalitetMapper)
         {
@@ -18,17 +18,18 @@ namespace Sosi2Gml.Reguleringsplanforslag.Mappers
             _kvalitetMapper = kvalitetMapper;
         }
 
-        public RpGrense Map(SosiObject sosiObject, string srsName, int decimalPlaces)
+        public RpOmråde Map(SosiObject sosiObject, string srsName, int decimalPlaces, IEnumerable<RpGrense> curveFeatures)
         {
-            var rpGrense = new RpGrense(sosiObject, srsName, decimalPlaces)
+            var rpOmråde = new RpOmråde(sosiObject, srsName, decimalPlaces, curveFeatures)
             {
                 Identifikasjon = _identifikasjonMapper.Map(sosiObject),
                 Kvalitet = _kvalitetMapper.Map(sosiObject),
                 FørsteDigitaliseringsdato = SosiDateToDateTime(sosiObject.GetValue("..FØRSTEDIGITALISERINGSDATO")),
-                Oppdateringsdato = SosiDateToDateTime(sosiObject.GetValue("..OPPDATERINGSDATO")).Value
+                Oppdateringsdato = SosiDateToDateTime(sosiObject.GetValue("..OPPDATERINGSDATO")).Value,
+                Vertikalnivå = sosiObject.GetValue("..VERTNIV")
             };
 
-            return rpGrense;
+            return rpOmråde;
         }
     }
 }

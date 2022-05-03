@@ -3,20 +3,21 @@ using System.Xml.Linq;
 using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.MapperHelper;
+using Sosi2Gml.Application.Helpers;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
     public class RpOmråde : SurfaceFeature
     {
-        public RpOmråde(SosiObject sosiObject, string srsName, int decimalPlaces) : base(sosiObject, srsName, decimalPlaces)
+        public RpOmråde(
+            SosiObject sosiObject, string srsName, int decimalPlaces, IEnumerable<RpGrense> rpGrenser) : base(sosiObject, srsName, decimalPlaces, rpGrenser)
         {
         }
 
         public string Vertikalnivå { get; set; }
         public override string FeatureName => "RpOmråde";
-        public override XElement GetGeomElement() => base.GetGeomElement();
         public Arealplan Arealplan { get; set; }
-        public List<RpPåskrift> Påskrifter { get; set; }
+        public List<RpPåskrift> Påskrifter { get; set; } = new();
 
         public override XElement ToGml()
         {

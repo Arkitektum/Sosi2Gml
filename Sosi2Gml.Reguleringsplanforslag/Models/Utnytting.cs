@@ -11,12 +11,10 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
         public override XElement ToGml(XNamespace ns)
         {
-            return new XElement(ns + "utnytting",
-                new XElement(ns + "Utnytting",
-                    new XElement(ns + "utnyttingstype", Utnyttingstype),
-                    new XElement(ns + "utnyttingstall", Utnyttingstall ?? "0"),
-                    new XElement(ns + "utnyttingstall_minimum", UtnyttingstallMinimum ?? "0")
-                )
+            return new XElement(ns + "Utnytting",
+                new XElement(ns + "utnyttingstype", Utnyttingstype),
+                new XElement(ns + "utnyttingstall", Utnyttingstall ?? "0"),
+                new XElement(ns + "utnyttingstall_minimum", UtnyttingstallMinimum ?? "0")
             );
         }
     }

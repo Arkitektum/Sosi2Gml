@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Sosi2Gml.Application.Mappers.Interfaces;
 using Sosi2Gml.Application.Models.Sosi;
 using Sosi2Gml.Reguleringsplanforslag.Constants;
 using Sosi2Gml.Reguleringsplanforslag.Mappers.Interfaces;
+using Sosi2Gml.Reguleringsplanforslag.Models;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -13,27 +15,49 @@ namespace Sosi2Gml.Controllers
     {
         private static Regex _sosiObjectRegex = new(@"^\.[A-ZÆØÅ]+", RegexOptions.Compiled);
 
-        private readonly IRpGrenseMapper _rpGrenseMapper;
+        private readonly IGmlFeatureMapper<RpGrense> _rpGrenseMapper;
+        private readonly IGmlFeatureMapper<RpFormålGrense> _rpFormålGrenseMapper;
+        private readonly IGmlSurfaceFeatureMapper<RpOmråde, RpGrense> _rpOmrådeMapper;
+        private readonly IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense> _rpArealformålOmrådeMapper;
 
         public TestController(
-             IRpGrenseMapper rpGrenseMapper)
+             IGmlFeatureMapper<RpGrense> rpGrenseMapper,
+             IGmlFeatureMapper<RpFormålGrense> rpFormålGrenseMapper,
+             IGmlSurfaceFeatureMapper<RpOmråde, RpGrense> rpOmrådeMapper,
+             IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense> rpArealformålOmrådeMapper)
         {
             _rpGrenseMapper = rpGrenseMapper;
+            _rpFormålGrenseMapper = rpFormålGrenseMapper;
+            _rpOmrådeMapper = rpOmrådeMapper;
+            _rpArealformålOmrådeMapper = rpArealformålOmrådeMapper;
         }
 
         [HttpPost]
         public async Task<IActionResult> Sosi2Gml(IFormFile sosiFile)
         {
+            const string SrsName = "http://www.opengis.net/def/crs/EPSG/0/25832";
+            const int DecimalPlaces = 2;
+
             var sosiObjects = await ReadSosiFileAsync(sosiFile);
             var hode = sosiObjects.First();
-            var rpGrenserSosiObjects = sosiObjects[FeatureMemberName.RpGrense];
-            var rpGrenser = rpGrenserSosiObjects.ConvertAll(rpGrense => _rpGrenseMapper.Map(rpGrense));
 
-            using var rpGrense = rpGrenser.First();
+            var rpGrenseSosiObjects = sosiObjects[FeatureMemberName.RpGrense];
+            var rpGrenser = rpGrenseSosiObjects.ConvertAll(rpGrense => _rpGrenseMapper.Map(rpGrense, SrsName, DecimalPlaces));
+
+            var rpOmrådeSosiObjects = sosiObjects[FeatureMemberName.RpOmråde];
+            var rpOmråder = rpOmrådeSosiObjects.ConvertAll(rpOmråde => _rpOmrådeMapper.Map(rpOmråde, SrsName, DecimalPlaces, rpGrenser));
+
+            var rpFormålGrenseSosiObjects = sosiObjects[FeatureMemberName.RpFormålGrense];
+            var rpFormålGrenser = rpFormålGrenseSosiObjects.ConvertAll(rpFormålGrense => _rpFormålGrenseMapper.Map(rpFormålGrense, SrsName, DecimalPlaces));
+
+            var rpArealformålOmrådeSosiObjects = sosiObjects[FeatureMemberName.RpArealformålOmråde];
+            var rpArealformålOmråder = rpArealformålOmrådeSosiObjects.ConvertAll(rpArealformålOmråde => _rpArealformålOmrådeMapper.Map(rpArealformålOmråde, SrsName, DecimalPlaces, rpFormålGrenser));
+
+            var b = rpArealformålOmråder.First();
 
             return Ok();
         }
-
+      
         private static async Task<Dictionary<string, List<SosiObject>>> ReadSosiFileAsync(IFormFile sosiFile)
         {
             using var streamReader = new StreamReader(sosiFile.OpenReadStream(), Encoding.UTF8);

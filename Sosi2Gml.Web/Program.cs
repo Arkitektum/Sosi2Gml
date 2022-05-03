@@ -3,7 +3,7 @@ using Sosi2Gml.Application.Mappers;
 using Sosi2Gml.Application.Mappers.Interfaces;
 using Sosi2Gml.Application.Models.Sosi;
 using Sosi2Gml.Reguleringsplanforslag.Mappers;
-using Sosi2Gml.Reguleringsplanforslag.Mappers.Interfaces;
+using Sosi2Gml.Reguleringsplanforslag.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -16,8 +16,11 @@ services.AddSwaggerGen();
 services.AddTransient<IGmlElementMapper<Identifikasjon>, IdentifikasjonMapper>();
 services.AddTransient<IGmlElementMapper<Kvalitet>, KvalitetMapper>();
 
+services.AddTransient<IGmlFeatureMapper<RpGrense>, RpGrenseMapper>();
+services.AddTransient<IGmlFeatureMapper<RpFormålGrense>, RpFormålGrenseMapper>();
 
-services.AddTransient<IRpGrenseMapper, RpGrenseMapper>();
+services.AddTransient<IGmlSurfaceFeatureMapper<RpOmråde, RpGrense>, RpOmrådeMapper>();
+services.AddTransient<IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense>, RpArealformålOmrådeMapper>();
 
 
 

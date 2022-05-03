@@ -1,12 +1,16 @@
 ﻿using Sosi2Gml.Application.Models.Sosi;
+using System.Globalization;
 
 namespace Sosi2Gml.Application.Helpers
 {
     public class MapperHelper
     {
-        public static DateTime SosiDateToDateTime(string dateString)
+        public static DateTime? SosiDateToDateTime(string dateString)
         {
-            return DateTime.ParseExact(dateString, "yyyyMMdd", null);
+            if (string.IsNullOrWhiteSpace(dateString))
+                return null;
+
+            return DateTime.TryParseExact(dateString, "yyyyMMdd", null, DateTimeStyles.None, out var dateTime) ? dateTime : null;
         }
 
         public static string FormatDateTime(DateTime dateTime, string format = "yyyy-MM-ddTHH:mm:ss.fff")

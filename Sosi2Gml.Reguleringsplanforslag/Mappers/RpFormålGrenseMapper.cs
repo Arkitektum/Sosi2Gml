@@ -1,12 +1,11 @@
 ﻿using Sosi2Gml.Application.Mappers.Interfaces;
 using Sosi2Gml.Application.Models.Sosi;
-using Sosi2Gml.Reguleringsplanforslag.Mappers.Interfaces;
 using Sosi2Gml.Reguleringsplanforslag.Models;
 using static Sosi2Gml.Application.Helpers.MapperHelper;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Mappers
 {
-    public class RpFormålGrenseMapper : IRpFormålGrenseMapper
+    public class RpFormålGrenseMapper : IGmlFeatureMapper<RpFormålGrense>
     {
         private readonly IGmlElementMapper<Identifikasjon> _identifikasjonMapper;
         private readonly IGmlElementMapper<Kvalitet> _kvalitetMapper;
@@ -19,20 +18,15 @@ namespace Sosi2Gml.Reguleringsplanforslag.Mappers
             _kvalitetMapper = kvalitetMapper;
         }
 
-        public RpFormålGrense Map(SosiObject sosiObject)
+        public RpFormålGrense Map(SosiObject sosiObject, string srsName, int decimalPlaces)
         {
-            var rpFormålGrense = new RpFormålGrense(sosiObject, "http://www.opengis.net/def/crs/EPSG/0/25832", 2)
+            var rpFormålGrense = new RpFormålGrense(sosiObject, srsName, decimalPlaces)
             {
                 Identifikasjon = _identifikasjonMapper.Map(sosiObject),
+                FørsteDigitaliseringsdato = SosiDateToDateTime(sosiObject.GetValue("..FØRSTEDIGITALISERINGSDATO")),
+                Oppdateringsdato = SosiDateToDateTime(sosiObject.GetValue("..OPPDATERINGSDATO")).Value,
                 Kvalitet = _kvalitetMapper.Map(sosiObject)
             };
-
-            var førsteDigitaliseringsdato = sosiObject.GetValue("..FØRSTEDIGITALISERINGSDATO");
-
-            if (førsteDigitaliseringsdato != null)
-                rpFormålGrense.FørsteDigitaliseringsdato = SosiDateToDateTime(førsteDigitaliseringsdato);
-
-            rpFormålGrense.Oppdateringsdato = SosiDateToDateTime(sosiObject.GetValue("..OPPDATERINGSDATO"));
 
             return rpFormålGrense;
         }

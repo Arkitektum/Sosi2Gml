@@ -69,5 +69,43 @@ namespace Sosi2Gml.Application.Helpers
                 )
             );
         }
+
+        public static XElement CreateMultiSurface(IEnumerable<XElement> exterior, IEnumerable<IEnumerable<XElement>> interiors, string gmlId, string srsName)
+        {
+            var multiSurface = new XElement(Namespace.GmlNs + "MultiSurface",
+                new XAttribute(Namespace.GmlNs + "id", $"{gmlId}-0"),
+                new XAttribute("srsName", srsName),
+                new XAttribute("srsDimension", 2)
+            );
+
+            var polygon = new XElement(Namespace.GmlNs + "Polygon",
+                new XAttribute(Namespace.GmlNs + "id", $"{gmlId}-1"),
+                new XElement(Namespace.GmlNs + "exterior",
+                    new XElement(Namespace.GmlNs + "Ring",
+                        new XElement(Namespace.GmlNs + "curveMember",
+                            CreateCurve(exterior, $"{gmlId}-2", srsName)
+                        )
+                    )
+                )
+            );
+
+            if (interiors.Any())
+            {
+                polygon.Add(interiors.Select((interior, index) =>
+                {
+                    return new XElement(Namespace.GmlNs + "interior",
+                        new XElement(Namespace.GmlNs + "Ring",
+                            new XElement(Namespace.GmlNs + "curveMember",
+                                CreateCurve(interior, $"{gmlId}-{index + 3}", srsName)
+                            )
+                        )
+                    );
+                }));
+            }
+
+            multiSurface.Add(new XElement(Namespace.GmlNs + "surfaceMember", polygon));
+
+            return multiSurface;
+        }
     }
 }

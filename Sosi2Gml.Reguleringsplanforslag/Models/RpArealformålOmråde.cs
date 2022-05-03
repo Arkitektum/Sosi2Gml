@@ -4,12 +4,14 @@ using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
 using static Sosi2Gml.Application.Helpers.MapperHelper;
+using Sosi2Gml.Application.Helpers;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
     public class RpArealformålOmråde : SurfaceFeature
     {
-        public RpArealformålOmråde(SosiObject sosiObject, string srsName, int decimalPlaces) : base(sosiObject, srsName, decimalPlaces)
+        public RpArealformålOmråde(
+            SosiObject sosiObject, string srsName, int decimalPlaces, IEnumerable<RpFormålGrense> rpFormålGrenser) : base(sosiObject, srsName, decimalPlaces, rpFormålGrenser)
         {
         }
 
@@ -26,6 +28,28 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         public List<RpPåskrift> Påskrifter { get; set; }
 
         public override string FeatureName => "RpArealformålOmråde";
+
+        public override XElement GetGeomElement()
+        {
+            var exterior = CreateRing(Surface.Exterior);
+            var interiors = Surface.Interior.Select(curveReferences => CreateRing(curveReferences));
+
+            return CreateMultiSurface(exterior, interiors, GmlId, SrsName);
+        }
+
+        private IEnumerable<XElement> CreateRing(List<CurveReference> curveReferences)
+        {
+            return curveReferences
+                .Select(curveReference =>
+                {
+                    var points = curveReference.Reversed ? Enumerable.Reverse(curveReference.Feature.Points) : curveReference.Feature.Points;
+
+                    if (curveReference.Feature.CartographicElementType == CartographicElementType.Kurve)
+                        return CreateLineStringSegment(points);
+
+                    return CreateArc(points);
+                });
+        }
 
         public override XElement ToGml()
         {
@@ -66,7 +90,7 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
 
             if (AvgrensesAv.Any())
-                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(AppNs + "påskrift", påskrift.GmlId)));
+                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(AppNs + "påskrift", "blah")));
 
             return featureMember;
         }

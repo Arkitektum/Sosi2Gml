@@ -11,4 +11,10 @@
         public CurveFeature Feature { get; private set; }
         public bool Reversed { get; private set; }
     }
+
+    public class Surface
+    {
+        public List<CurveReference> Exterior { get; set; } = new();
+        public List<List<CurveReference>> Interior { get; set; } = new();
+    }
 }
