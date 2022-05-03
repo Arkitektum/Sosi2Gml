@@ -1,4 +1,6 @@
-﻿using Sosi2Gml.Application.Models.Sosi;
+﻿using Sosi2Gml.Application.Constants;
+using Sosi2Gml.Application.Models.Geometries;
+using Sosi2Gml.Application.Models.Sosi;
 using System.Globalization;
 
 namespace Sosi2Gml.Application.Helpers
@@ -35,6 +37,33 @@ namespace Sosi2Gml.Application.Helpers
         public static string GenerateGmlId()
         {
             return $"_{Guid.NewGuid()}";
+        }
+
+        public static List<Point> GetPoints(SosiValues sosiValues, int decimalPlaces)
+        {
+            var points = new List<Point>();
+
+            for (int i = 0; i < sosiValues.Lines.Count; i++)
+            {
+                var value = sosiValues.Lines[i];
+
+                if (Regexes.PointsStartRegex.IsMatch(value))
+                {
+                    var pointValues = sosiValues.Lines.Skip(i);
+
+                    foreach (var pointValue in pointValues)
+                    {
+                        var pointMatch = Regexes.PointRegex.Match(pointValue);
+
+                        if (pointMatch.Success)
+                            points.Add(Point.Create(pointMatch.Groups["x"].Value, pointMatch.Groups["y"].Value, decimalPlaces));
+                    }
+
+                    break;
+                }
+            }
+
+            return points;
         }
     }
 }
