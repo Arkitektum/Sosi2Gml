@@ -19,17 +19,20 @@ namespace Sosi2Gml.Controllers
         private readonly IGmlFeatureMapper<RpFormålGrense> _rpFormålGrenseMapper;
         private readonly IGmlSurfaceFeatureMapper<RpOmråde, RpGrense> _rpOmrådeMapper;
         private readonly IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense> _rpArealformålOmrådeMapper;
+        private readonly IGmlFeatureMapper<RpJuridiskPunkt> _rpJuridiskPunktMapper;
 
         public TestController(
              IGmlFeatureMapper<RpGrense> rpGrenseMapper,
              IGmlFeatureMapper<RpFormålGrense> rpFormålGrenseMapper,
              IGmlSurfaceFeatureMapper<RpOmråde, RpGrense> rpOmrådeMapper,
-             IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense> rpArealformålOmrådeMapper)
+             IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense> rpArealformålOmrådeMapper,
+             IGmlFeatureMapper<RpJuridiskPunkt> rpJuridiskPunktMapper)
         {
             _rpGrenseMapper = rpGrenseMapper;
             _rpFormålGrenseMapper = rpFormålGrenseMapper;
             _rpOmrådeMapper = rpOmrådeMapper;
             _rpArealformålOmrådeMapper = rpArealformålOmrådeMapper;
+            _rpJuridiskPunktMapper = rpJuridiskPunktMapper;
         }
 
         [HttpPost]
@@ -40,6 +43,9 @@ namespace Sosi2Gml.Controllers
 
             var sosiObjects = await ReadSosiFileAsync(sosiFile);
             var hode = sosiObjects.First();
+
+            var rpJuridiskPunktObjects = sosiObjects[FeatureMemberName.RpJuridiskPunkt];
+            var rpJuridiskePunkt = rpJuridiskPunktObjects.ConvertAll(sosiObject => _rpJuridiskPunktMapper.Map(sosiObject, SrsName, DecimalPlaces));
 
             var rpGrenseSosiObjects = sosiObjects[FeatureMemberName.RpGrense];
             var rpGrenser = rpGrenseSosiObjects.ConvertAll(rpGrense => _rpGrenseMapper.Map(rpGrense, SrsName, DecimalPlaces));

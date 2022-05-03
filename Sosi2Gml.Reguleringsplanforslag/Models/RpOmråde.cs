@@ -1,9 +1,8 @@
 ﻿using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Constants.Namespace;
-using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.MapperHelper;
-using Sosi2Gml.Application.Helpers;
+using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {

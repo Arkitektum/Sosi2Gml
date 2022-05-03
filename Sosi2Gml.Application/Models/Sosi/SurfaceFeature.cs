@@ -1,4 +1,6 @@
 ﻿using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using static Sosi2Gml.Application.Helpers.GmlHelper;
 
 namespace Sosi2Gml.Application.Models.Sosi
 {
@@ -14,6 +16,28 @@ namespace Sosi2Gml.Application.Models.Sosi
         }
 
         public Surface Surface { get; set; } = new();
+
+        public override XElement GetGeomElement()
+        {
+            var exterior = CreateSurfaceRing(Surface.Exterior);
+            var interiors = Surface.Interior.Select(curveReferences => CreateSurfaceRing(curveReferences));
+
+            return CreateMultiSurface(exterior, interiors, GmlId, SrsName);
+        }
+
+        private static IEnumerable<XElement> CreateSurfaceRing(List<CurveReference> curveReferences)
+        {
+            return curveReferences
+                .Select(curveReference =>
+                {
+                    var points = curveReference.Reversed ? Enumerable.Reverse(curveReference.Feature.Points) : curveReference.Feature.Points;
+
+                    if (curveReference.Feature.CartographicElementType == CartographicElementType.Kurve)
+                        return CreateLineStringSegment(points);
+
+                    return CreateArc(points);
+                });
+        }
 
         private void SetCurveReferences(IEnumerable<CurveFeature> curveFeatures)
         {

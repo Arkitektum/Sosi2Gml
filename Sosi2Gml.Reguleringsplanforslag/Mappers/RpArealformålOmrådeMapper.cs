@@ -45,6 +45,8 @@ namespace Sosi2Gml.Reguleringsplanforslag.Mappers
                 });
             }
 
+            rpArealformålOmråde.AvgrensesAv.AddRange(rpArealformålOmråde.Surface.GetFeatures<RpFormålGrense>());
+
             return rpArealformålOmråde;
         }
     }

@@ -22,33 +22,11 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         public string Uteoppholdsareal { get; set; }
         public string Avkjørselsbestemmelse { get; set; }
         public string Byggverkbestemmelse { get; set; }
-        public List<RpFormålGrense> AvgrensesAv { get; set; }
+        public List<RpFormålGrense> AvgrensesAv { get; set; } = new();
         public RpOmråde Planområde { get; set; }
-        public List<RpPåskrift> Påskrifter { get; set; }
+        public List<RpPåskrift> Påskrifter { get; set; } = new();
 
         public override string FeatureName => "RpArealformålOmråde";
-
-        public override XElement GetGeomElement()
-        {
-            var exterior = CreateRing(Surface.Exterior);
-            var interiors = Surface.Interior.Select(curveReferences => CreateRing(curveReferences));
-
-            return CreateMultiSurface(exterior, interiors, GmlId, SrsName);
-        }
-
-        private IEnumerable<XElement> CreateRing(List<CurveReference> curveReferences)
-        {
-            return curveReferences
-                .Select(curveReference =>
-                {
-                    var points = curveReference.Reversed ? Enumerable.Reverse(curveReference.Feature.Points) : curveReference.Feature.Points;
-
-                    if (curveReference.Feature.CartographicElementType == CartographicElementType.Kurve)
-                        return CreateLineStringSegment(points);
-
-                    return CreateArc(points);
-                });
-        }
 
         public override XElement ToGml()
         {
@@ -64,6 +42,7 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             if (Kvalitet != null)
                 featureMember.Add(Kvalitet.ToGml(AppNs));
 
+            featureMember.Add(new XElement(AppNs + "område", GetGeomElement()));
             featureMember.Add(new XElement(AppNs + "arealformål", Arealformål));
             featureMember.Add(new XElement(AppNs + "feltnavn", Feltnavn));
             featureMember.Add(new XElement(AppNs + "eierform", Eierform));
@@ -86,10 +65,10 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             if (AvgrensesAv.Any())
                 featureMember.Add(AvgrensesAv.Select(formålGrense => CreateXLink(AppNs + "avgrensesAv", formålGrense.GmlId)));
 
-            featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
+            //featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
 
-            if (AvgrensesAv.Any())
-                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(AppNs + "påskrift", "blah")));
+            /*if (AvgrensesAv.Any())
+                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(AppNs + "påskrift", påskrift.)));*/
 
             return featureMember;
         }

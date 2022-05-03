@@ -18,6 +18,7 @@ services.AddTransient<IGmlElementMapper<Kvalitet>, KvalitetMapper>();
 
 services.AddTransient<IGmlFeatureMapper<RpGrense>, RpGrenseMapper>();
 services.AddTransient<IGmlFeatureMapper<RpFormålGrense>, RpFormålGrenseMapper>();
+services.AddTransient<IGmlFeatureMapper<RpJuridiskPunkt>, RpJuridiskPunktMapper>();
 
 services.AddTransient<IGmlSurfaceFeatureMapper<RpOmråde, RpGrense>, RpOmrådeMapper>();
 services.AddTransient<IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense>, RpArealformålOmrådeMapper>();

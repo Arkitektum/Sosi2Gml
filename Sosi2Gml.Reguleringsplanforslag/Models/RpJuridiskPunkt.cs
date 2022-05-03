@@ -50,7 +50,7 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
             featureMember.Add(new XElement(AppNs + "juridiskpunkt", JuridiskPunkt));
 
-            featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
+            //featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
 
             return featureMember;
         }
