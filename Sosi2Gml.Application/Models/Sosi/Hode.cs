@@ -9,7 +9,7 @@ namespace Sosi2Gml.Application.Models.Sosi
 {
     public class Hode
     {
-        public Koordinatsystem Koordinatsystem { get; set; }
+        public CoordinateSystem Koordinatsystem { get; set; }
         public int AntallDesimaler { get; set; }
         public Envelope Område { get; set; }
         public string SosiVersjon { get; set; }

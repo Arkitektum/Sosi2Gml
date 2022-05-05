@@ -4,6 +4,13 @@ namespace Sosi2Gml.Application.Models.Sosi
 {
     public class Identifikasjon : GmlElement
     {
+        public Identifikasjon(SosiObject sosiObject)
+        {
+            LokalId = sosiObject.GetValue("...LOKALID");
+            Navnerom = sosiObject.GetValue("...NAVNEROM");
+            VersjonId = sosiObject.GetValue("...VERSJONID");
+        }
+
         public string LokalId { get; set; }
         public string Navnerom { get; set; }
         public string VersjonId { get; set; }

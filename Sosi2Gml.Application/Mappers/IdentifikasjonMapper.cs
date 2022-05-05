@@ -10,12 +10,7 @@ namespace Sosi2Gml.Application.Mappers
             if (!sosiObject.HasValue("..IDENT"))
                 return null;
 
-            return new Identifikasjon
-            {
-                LokalId = sosiObject.GetValue("...LOKALID"),
-                Navnerom = sosiObject.GetValue("...NAVNEROM"),
-                VersjonId = sosiObject.GetValue("...VERSJONID"),
-            };
+            return null;
         }
     }
 }

@@ -7,6 +7,7 @@ using Sosi2Gml.Reguleringsplanforslag.Mappers.Interfaces;
 using Sosi2Gml.Reguleringsplanforslag.Models;
 using System.Text;
 using System.Text.RegularExpressions;
+using Sosi2Gml.Application.Constants;
 
 namespace Sosi2Gml.Controllers
 {
@@ -45,6 +46,16 @@ namespace Sosi2Gml.Controllers
             _rpHensynGrenseMapper = rpHensynGrenseMapper;
         }
 
+        private T Map<T>(SosiObject sosiObject) where T : Feature, new()
+        {
+            return new T();
+        }
+
+        public List<TOutput> ConvertAll<TOutput>(Dictionary<string, List<SosiObject>> sosiObjects, Converter<SosiObject, TOutput> converter) 
+        {
+            return null;
+        }
+
         [HttpPost]
         public async Task<IActionResult> Sosi2Gml(IFormFile sosiFile)
         {
@@ -54,13 +65,24 @@ namespace Sosi2Gml.Controllers
             var sosiObjects = await ReadSosiFileAsync(sosiFile);
             var hode = sosiObjects.First();
 
+            var b = ConvertAll<RpGrense>(sosiObjects, sosiObject => new(sosiObject, SrsName, DecimalPlaces));
+
+
+            //ConvertAll<RpGrense>(sosiObjects, () => new(sosiObject)
+
+            var rpGrenseSosiObjects = sosiObjects[FeatureMemberName.RpGrense];
+            var rpGrenser = rpGrenseSosiObjects.ConvertAll(rpGrense => _rpGrenseMapper.Map(rpGrense, SrsName, DecimalPlaces));
+
+            var rpOmrådeSosiObjects = sosiObjects[FeatureMemberName.RpOmråde];
+            var rpOmråder = rpOmrådeSosiObjects.ConvertAll<RpOmråde>(sosiObject => new(sosiObject, SrsName, DecimalPlaces, rpGrenser));
+
             var rpSikringGrenseObjects = sosiObjects["RpSikringGrense"];
             var rpSikringGrenser = rpSikringGrenseObjects.ConvertAll(sosiObject => _rpHensynGrenseMapper.Map<RpSikringGrense>(sosiObject, SrsName, DecimalPlaces));
 
             var rpSikringSoneObjects = sosiObjects["RpSikringSone"];
             var rpSikringSoner = rpSikringSoneObjects.ConvertAll(sosiObject => _rpSikringSoneMapper.Map(sosiObject, SrsName, DecimalPlaces, rpSikringGrenser));
 
-            var b = rpSikringSoner;
+            var g = rpSikringSoner;
 
             /*var rpJuridiskPunktObjects = sosiObjects[FeatureMemberName.RpJuridiskPunkt];
             var rpJuridiskePunkt = rpJuridiskPunktObjects.ConvertAll(sosiObject => _rpJuridiskPunktMapper.Map(sosiObject, SrsName, DecimalPlaces));
@@ -88,6 +110,41 @@ namespace Sosi2Gml.Controllers
             return Ok();
         }
       
+        public class SosiDocument
+        {
+            public SosiDocument()
+            {
+                ...KOORDSYS
+            }
+
+            public CoordinateSystem CoordinateSystem { get; set; }
+            public int DecimalCount { get; set; }
+            public Envelope Envelope { get; set; }
+            public string SosiVersion { get; set; }
+            public Dictionary<string, List<SosiObject>> SosiObjects { get; set; }
+
+            public List<SosiObject> GetByType<T>() where T : Feature
+            {
+                return null;
+            }
+
+            public static SosiDocument Create(Dictionary<string, List<string>> sosiLines)
+            {
+                var sosiObjects = sosiLines
+                    .Select(kvp => SosiObject.Create(kvp.Key, kvp.Value))
+                    .GroupBy(sosiObject => sosiObject.GetValue("..OBJTYPE") ?? sosiObject.ElementType)
+                    .ToDictionary(grouping => grouping.Key, grouping => grouping.Select(sosiObject => sosiObject).ToList());
+
+                var head = sosiObjects[".HODE"].SingleOrDefault();
+                
+                var code = head.GetValue("...KOORDSYS");
+                var uri = Constants.SrsName[code];
+                
+                var coordinateSystem = new CoordinateSystem(code, uri);
+            }
+            
+        }
+
         private static async Task<Dictionary<string, List<SosiObject>>> ReadSosiFileAsync(IFormFile sosiFile)
         {
             using var streamReader = new StreamReader(sosiFile.OpenReadStream(), Encoding.UTF8);

@@ -12,10 +12,7 @@ namespace Sosi2Gml.Application.Mappers
             if (kvalitet == null)
                 return null;
 
-            return new Kvalitet
-            {
-                Målemetode = kvalitet
-            };
+            return null;
         }
     }
 }

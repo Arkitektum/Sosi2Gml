@@ -11,12 +11,14 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         public RpOmråde(
             SosiObject sosiObject, string srsName, int decimalPlaces, IEnumerable<RpGrense> rpGrenser) : base(sosiObject, srsName, decimalPlaces, rpGrenser)
         {
+            Vertikalnivå = sosiObject.GetValue("..VERTNIV");
         }
 
         public string Vertikalnivå { get; set; }
-        public override string FeatureName => "RpOmråde";
         public Arealplan Arealplan { get; set; }
         public List<RpPåskrift> Påskrifter { get; set; } = new();
+
+        public override string FeatureName => "RpOmråde";
 
         public override XElement ToGml()
         {
