@@ -4,7 +4,7 @@ using static Sosi2Gml.Application.Helpers.GmlHelper;
 
 namespace Sosi2Gml.Application.Models.Sosi
 {
-    public abstract class SurfaceFeature : GeometryFeature
+    public abstract class SurfaceFeature : MapFeature
     {
         private static readonly Regex _curveReferencesRegex = new(@"\.\.REF(?<refs>(.*))\.\.NØ", RegexOptions.Compiled | RegexOptions.Singleline);
         private static readonly Regex _surfaceRingRegex = new(@"(?<exterior>.*?)(?<interiors>\(.*?\))", RegexOptions.Compiled);
@@ -17,12 +17,15 @@ namespace Sosi2Gml.Application.Models.Sosi
 
         public Surface Surface { get; set; } = new();
 
-        public override XElement GetGeomElement()
+        public override XElement GeomElement
         {
-            var exterior = CreateSurfaceRing(Surface.Exterior);
-            var interiors = Surface.Interior.Select(curveReferences => CreateSurfaceRing(curveReferences));
+            get
+            {
+                var exterior = CreateSurfaceRing(Surface.Exterior);
+                var interiors = Surface.Interior.Select(curveReferences => CreateSurfaceRing(curveReferences));
 
-            return CreateMultiSurface(exterior, interiors, GmlId, SrsName);
+                return CreateMultiSurface(exterior, interiors, GmlId, SrsName);
+            }
         }
 
         private static IEnumerable<XElement> CreateSurfaceRing(List<CurveReference> curveReferences)

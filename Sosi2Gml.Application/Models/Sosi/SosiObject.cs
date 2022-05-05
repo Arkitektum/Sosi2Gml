@@ -15,7 +15,10 @@ namespace Sosi2Gml.Application.Models.Sosi
             if (SosiValues == null)
                 return null;
 
-            return SosiValues.ObjectProperties.TryGetValue(key, out var value) ? value : null;
+            if (SosiValues.ObjectProperties.TryGetValue(key, out var value))
+                return value.Trim('"', '\'');
+
+            return null;
         }
 
         public bool HasValue(string key)

@@ -1,12 +1,25 @@
-﻿using Sosi2Gml.Application.Constants;
+﻿using Sosi2Gml.Application.Attributes;
+using Sosi2Gml.Application.Constants;
 using Sosi2Gml.Application.Models.Geometries;
 using Sosi2Gml.Application.Models.Sosi;
 using System.Globalization;
+using System.Reflection;
 
 namespace Sosi2Gml.Application.Helpers
 {
     public class MapperHelper
     {
+        public static string GetSosiObjectName<T>() where T : Feature
+        {
+            var type = typeof(T);
+            var sosiObjectNameAttribute = type.GetCustomAttribute<SosiObjectNameAttribute>();
+
+            if (sosiObjectNameAttribute != null)
+                return sosiObjectNameAttribute.SosiObjectName;
+
+            return type.Name;
+        }
+
         public static DateTime? SosiDateToDateTime(string dateString)
         {
             if (string.IsNullOrWhiteSpace(dateString))

@@ -1,4 +1,6 @@
-﻿using Sosi2Gml.Application.Models.Sosi;
+﻿using Sosi2Gml.Application.Attributes;
+using Sosi2Gml.Application.Models.Geometries;
+using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
@@ -7,10 +9,13 @@ using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
+    [SosiObjectName("RpJuridiskPunkt")]
     public class RpJuridiskPunkt : PointFeature
     {
         public RpJuridiskPunkt(SosiObject sosiObject, string srsName, int decimalPlaces) : base(sosiObject, srsName, decimalPlaces)
         {
+            Symbolretning = GetSymbolretning(Points);
+            JuridiskPunkt = sosiObject.GetValue("..RPJURPUNKT");
         }
 
         public double[] Symbolretning { get; set; }
@@ -35,13 +40,6 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
             featureMember.Add(new XElement(AppNs + "posisjon", CreatePoint(Points.First(), GmlId, SrsName)));
 
-            featureMember.Add(new XElement(AppNs + "symboldimensjon",
-                new XElement(AppNs + "SymbolDimensjon",
-                    new XElement(AppNs + "symbolhøyde", "0.00"),
-                    new XElement(AppNs + "symbolbredde", "0.00")
-                )
-            ));
-
             featureMember.Add(new XElement(AppNs + "symbolretning",
                 new XAttribute("srsDimension", 2),
                 new XAttribute("srsName", SrsName),
@@ -50,9 +48,18 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
             featureMember.Add(new XElement(AppNs + "juridiskpunkt", JuridiskPunkt));
 
-            //featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
+            if (Planområde != null)
+                featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
 
             return featureMember;
+        }
+
+        private static double[] GetSymbolretning(List<Point> points)
+        {
+            var firstPoint = points.First();
+            var lastPoint = points.Last();
+
+            return new[] { lastPoint.X - firstPoint.X, lastPoint.Y - firstPoint.Y };
         }
     }
 }

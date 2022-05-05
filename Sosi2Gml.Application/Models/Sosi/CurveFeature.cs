@@ -1,23 +1,27 @@
-﻿using Sosi2Gml.Application.Helpers;
+﻿using OSGeo.OGR;
+using Sosi2Gml.Application.Helpers;
 using Sosi2Gml.Application.Models.Geometries;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Helpers.MapperHelper;
 
 namespace Sosi2Gml.Application.Models.Sosi
 {
-    public abstract class CurveFeature : GeometryFeature
+    public abstract class CurveFeature : MapFeature
     {
         protected CurveFeature(SosiObject sosiObject, string srsName, int decimalPlaces) : base(sosiObject, srsName, decimalPlaces)
         {
             Points = GetPoints(SosiValues, decimalPlaces);
         }
 
-        public override XElement GetGeomElement()
+        public override XElement GeomElement
         {
-            var curveSegment = CartographicElementType == CartographicElementType.Kurve ? GmlHelper.CreateLineStringSegment(Points) : GmlHelper.CreateArc(Points);
-            var curve = GmlHelper.CreateCurve(new[] { curveSegment }, $"{GmlId}-0", SrsName);
+            get
+            {
+                var curveSegment = CartographicElementType == CartographicElementType.Kurve ? GmlHelper.CreateLineStringSegment(Points) : GmlHelper.CreateArc(Points);
+                var curve = GmlHelper.CreateCurve(new[] { curveSegment }, $"{GmlId}-0", SrsName);
 
-            return curve;
+                return curve;
+            }
         }
 
         public List<Point> Points { get; private set; }

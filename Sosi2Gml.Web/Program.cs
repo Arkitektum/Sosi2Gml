@@ -16,9 +16,8 @@ services.AddSwaggerGen();
 services.AddTransient<IGmlElementMapper<Identifikasjon>, IdentifikasjonMapper>();
 services.AddTransient<IGmlElementMapper<Kvalitet>, KvalitetMapper>();
 
-services.AddTransient<IGmlFeatureMapper<RpGrense>, RpGrenseMapper>();
-services.AddTransient<IGmlFeatureMapper<RpFormålGrense>, RpFormålGrenseMapper>();
-services.AddTransient<IRpHensynGrenseMapper, RpHensynGrenseMapper>();
+services.AddTransient<IGmlCurveFeatureMapper<RpGrense>, RpGrenseMapper>();
+services.AddTransient<IGmlCurveFeatureMapper<RpFormålGrense>, RpFormålGrenseMapper>();
 services.AddTransient<IGmlFeatureMapper<RpJuridiskPunkt>, RpJuridiskPunktMapper>();
 
 services.AddTransient<IGmlSurfaceFeatureMapper<RpOmråde, RpGrense>, RpOmrådeMapper>();

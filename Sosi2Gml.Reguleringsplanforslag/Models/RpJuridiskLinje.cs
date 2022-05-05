@@ -2,25 +2,24 @@
 using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Constants.Namespace;
+using static Sosi2Gml.Application.Helpers.GmlHelper;
 using static Sosi2Gml.Application.Helpers.MapperHelper;
 using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
-    [SosiObjectName("RpOmråde")]
-    public class RpOmråde : SurfaceFeature
+    [SosiObjectName("RpJuridiskLinje")]
+    public class RpJuridiskLinje : CurveFeature
     {
-        public RpOmråde(
-            SosiObject sosiObject, string srsName, int decimalPlaces, IEnumerable<RpGrense> rpGrenser) : base(sosiObject, srsName, decimalPlaces, rpGrenser)
+        public RpJuridiskLinje(SosiObject sosiObject, string srsName, int decimalPlaces) : base(sosiObject, srsName, decimalPlaces)
         {
-            Vertikalnivå = sosiObject.GetValue("..VERTNIV");
+            JuridiskLinje = sosiObject.GetValue("..RPJURLINJE");
         }
 
-        public string Vertikalnivå { get; set; }
-        public Arealplan Arealplan { get; set; }
-        public List<RpPåskrift> Påskrifter { get; set; } = new();
+        public string JuridiskLinje { get; set; }
+        public RpOmråde Planområde { get; set; }
 
-        public override string FeatureName => "RpOmråde";
+        public override string FeatureName => "RpJuridiskLinje";
 
         public override XElement ToGml()
         {
@@ -36,9 +35,12 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             if (Kvalitet != null)
                 featureMember.Add(Kvalitet.ToGml(AppNs));
 
-            featureMember.Add(new XElement(AppNs + "område", GeomElement));
+            featureMember.Add(new XElement(AppNs + "senterlinje", GeomElement));
 
-            featureMember.Add(new XElement(AppNs + "vertikalnivå", Vertikalnivå));
+            featureMember.Add(new XElement(AppNs + "juridisklinje", JuridiskLinje));
+
+            if (Planområde != null)
+                featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
 
             return featureMember;
         }

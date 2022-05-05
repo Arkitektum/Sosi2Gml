@@ -9,8 +9,4 @@
     <PackageReference Include="MaxRev.Gdal.Core" Version="3.3.3.120" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Attributes\" />
-  </ItemGroup>
-
 </Project>

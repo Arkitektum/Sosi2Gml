@@ -7,20 +7,17 @@ using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
-    [SosiObjectName("RpOmråde")]
-    public class RpOmråde : SurfaceFeature
+    [SosiObjectName("RpAngittHensynSone")]
+    public class RpAngittHensynSone : RpHensynSone
     {
-        public RpOmråde(
-            SosiObject sosiObject, string srsName, int decimalPlaces, IEnumerable<RpGrense> rpGrenser) : base(sosiObject, srsName, decimalPlaces, rpGrenser)
+        public RpAngittHensynSone(SosiObject sosiObject, string srsName, int decimalPlaces, IEnumerable<RpAngittHensynGrense> curveFeatures) : 
+            base(sosiObject, srsName, decimalPlaces, curveFeatures)
         {
-            Vertikalnivå = sosiObject.GetValue("..VERTNIV");
+            AngittHensyn = sosiObject.GetValue("..RPANGITTHENSYN");
         }
 
-        public string Vertikalnivå { get; set; }
-        public Arealplan Arealplan { get; set; }
-        public List<RpPåskrift> Påskrifter { get; set; } = new();
-
-        public override string FeatureName => "RpOmråde";
+        public string AngittHensyn { get; set; }
+        public override string FeatureName => "RpAngittHensynSone";
 
         public override XElement ToGml()
         {
@@ -37,8 +34,14 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
                 featureMember.Add(Kvalitet.ToGml(AppNs));
 
             featureMember.Add(new XElement(AppNs + "område", GeomElement));
+            featureMember.Add(new XElement(AppNs + "hensynSonenavn", HensynSonenavn));
 
-            featureMember.Add(new XElement(AppNs + "vertikalnivå", Vertikalnivå));
+            //featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
+
+            /*if (Påskrifter.Any())
+                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(AppNs + "påskrift", påskrift.GmlId)));*/
+
+            featureMember.Add(new XElement(AppNs + "angittHensyn", AngittHensyn));
 
             return featureMember;
         }

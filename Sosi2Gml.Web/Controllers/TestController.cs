@@ -8,6 +8,7 @@ using Sosi2Gml.Reguleringsplanforslag.Models;
 using System.Text;
 using System.Text.RegularExpressions;
 using Sosi2Gml.Application.Constants;
+using Sosi2Gml.Application.Helpers;
 
 namespace Sosi2Gml.Controllers
 {
@@ -17,24 +18,24 @@ namespace Sosi2Gml.Controllers
     {
         private static Regex _sosiObjectRegex = new(@"^\.[A-ZÆØÅ]+", RegexOptions.Compiled);
 
-        private readonly IGmlFeatureMapper<RpGrense> _rpGrenseMapper;
-        private readonly IGmlFeatureMapper<RpFormålGrense> _rpFormålGrenseMapper;
+        private readonly IGmlCurveFeatureMapper<RpGrense> _rpGrenseMapper;
+        private readonly IGmlCurveFeatureMapper<RpFormålGrense> _rpFormålGrenseMapper;
         private readonly IGmlFeatureMapper<RpSikringGrense> _rpSikringGrenseMapper;
         private readonly IGmlSurfaceFeatureMapper<RpOmråde, RpGrense> _rpOmrådeMapper;
         private readonly IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense> _rpArealformålOmrådeMapper;
         private readonly IGmlSurfaceFeatureMapper<RpSikringSone, RpSikringGrense> _rpSikringSoneMapper;
         private readonly IGmlFeatureMapper<RpJuridiskPunkt> _rpJuridiskPunktMapper;
-        private readonly IRpHensynGrenseMapper _rpHensynGrenseMapper;
+        private readonly IServiceProvider _serviceProvider;
 
         public TestController(
-             IGmlFeatureMapper<RpGrense> rpGrenseMapper,
-             IGmlFeatureMapper<RpFormålGrense> rpFormålGrenseMapper,
+             IGmlCurveFeatureMapper<RpGrense> rpGrenseMapper,
+             IGmlCurveFeatureMapper<RpFormålGrense> rpFormålGrenseMapper,
              //IGmlFeatureMapper<RpSikringGrense> rpSikringGrenseMapper,
              IGmlSurfaceFeatureMapper<RpOmråde, RpGrense> rpOmrådeMapper,
              IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense> rpArealformålOmrådeMapper,
              IGmlSurfaceFeatureMapper<RpSikringSone, RpSikringGrense> rpSikringSoneMapper,
              IGmlFeatureMapper<RpJuridiskPunkt> rpJuridiskPunktMapper,
-             IRpHensynGrenseMapper rpHensynGrenseMapper)
+             IServiceProvider serviceProvider)
         {
             _rpGrenseMapper = rpGrenseMapper;
             _rpFormålGrenseMapper = rpFormålGrenseMapper;
@@ -43,7 +44,7 @@ namespace Sosi2Gml.Controllers
             _rpArealformålOmrådeMapper = rpArealformålOmrådeMapper;
             _rpJuridiskPunktMapper = rpJuridiskPunktMapper;
             _rpSikringSoneMapper = rpSikringSoneMapper;
-            _rpHensynGrenseMapper = rpHensynGrenseMapper;
+            _serviceProvider = serviceProvider;
         }
 
         private T Map<T>(SosiObject sosiObject) where T : Feature, new()
@@ -56,30 +57,98 @@ namespace Sosi2Gml.Controllers
             return null;
         }
 
+        public void MapCurveFeatures<TCurveFeature>(SosiDocument document, List<Feature> features)
+            where TCurveFeature : CurveFeature
+        {
+            var curveObjects = document.GetSosiObjects<TCurveFeature>();
+
+            var curveFeatures = curveObjects
+                .ConvertAll(sosiObject => Activator.CreateInstance(typeof(TCurveFeature), new object[] { sosiObject, document.SrsName, document.DecimalCount }) as TCurveFeature);
+
+            features.AddRange(curveFeatures);
+        }
+
+        public void MapPointFeatures<TPointFeature>(SosiDocument document, List<Feature> features)
+            where TPointFeature : PointFeature
+        {
+            var pointObjects = document.GetSosiObjects<TPointFeature>();
+
+            var pointFeatures = pointObjects
+                .ConvertAll(sosiObject => Activator.CreateInstance(typeof(TPointFeature), new object[] { sosiObject, document.SrsName, document.DecimalCount }) as TPointFeature);
+
+            features.AddRange(pointFeatures);
+        }
+
+        public void MapCurveAndSurfaceFeatures<TCurveFeature, TSurfaceFeature>(SosiDocument document, List<Feature> features)
+            where TCurveFeature : CurveFeature
+            where TSurfaceFeature : SurfaceFeature
+        {
+            var curveObjects = document.GetSosiObjects<TCurveFeature>();
+            var surfaceObjects = document.GetSosiObjects<TSurfaceFeature>();
+
+            var curveFeatures = curveObjects
+                .ConvertAll(sosiObject => Activator.CreateInstance(typeof(TCurveFeature), new object[] { sosiObject, document.SrsName, document.DecimalCount }) as TCurveFeature);
+
+            var surfaceFeatures = surfaceObjects
+                .ConvertAll(sosiObject => Activator.CreateInstance(typeof(TSurfaceFeature), new object[] { sosiObject, document.SrsName, document.DecimalCount, curveFeatures }) as TSurfaceFeature);
+
+            features.AddRange(curveFeatures);
+            features.AddRange(surfaceFeatures);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Sosi2Gml(IFormFile sosiFile)
         {
             const string SrsName = "http://www.opengis.net/def/crs/EPSG/0/25832";
             const int DecimalPlaces = 2;
 
-            var sosiObjects = await ReadSosiFileAsync(sosiFile);
-            var hode = sosiObjects.First();
+            var document = await ReadSosiFileAsync(sosiFile);
 
-            var b = ConvertAll<RpGrense>(sosiObjects, sosiObject => new(sosiObject, SrsName, DecimalPlaces));
+            /*MapCurveAndSurfaceFeatures(
+                document, 
+                (sosiObject, srsName, decimalPlaces) => new RpGrense(sosiObject, srsName, decimalPlaces),
+                (sosiObject, srsName, decimalPlaces, curveFeatures) => new RpOmråde(sosiObject, srsName, decimalPlaces, curveFeatures)
+            );*/
 
+            var s = DateTime.Now;
+
+            var arealplan = new Arealplan(document.GetSosiObjects<RpOmråde>().First());
+            var features = new List<Feature> { arealplan };
+
+            MapCurveAndSurfaceFeatures<RpGrense, RpOmråde>(document, features);
+            MapCurveAndSurfaceFeatures<RpFormålGrense, RpArealformålOmråde>(document, features);
+            MapCurveAndSurfaceFeatures<RpAngittHensynGrense, RpAngittHensynSone>(document, features);
+            MapCurveAndSurfaceFeatures<RpBåndleggingGrense, RpBåndleggingSone>(document, features);
+            MapCurveAndSurfaceFeatures<RpDetaljeringGrense, RpDetaljeringSone>(document, features);
+            MapCurveAndSurfaceFeatures<RpFareGrense, RpFareSone>(document, features);
+            MapCurveAndSurfaceFeatures<RpGjennomføringGrense, RpGjennomføringSone>(document, features);
+            MapCurveAndSurfaceFeatures<RpInfrastrukturGrense, RpInfrastrukturSone>(document, features);
+            MapCurveAndSurfaceFeatures<RpSikringGrense, RpSikringSone>(document, features);
+            MapCurveAndSurfaceFeatures<RpStøyGrense, RpStøySone>(document, features);
+            MapCurveFeatures<RpJuridiskLinje>(document, features);
+            MapCurveFeatures<RpRegulertHøyde>(document, features);
+            MapPointFeatures<RpJuridiskPunkt>(document, features);
+
+            var e = s;
+
+            //var hode = sosiObjects.First();
+
+            /*var b = ConvertAll<RpGrense>(sosiDocument, sosiObject => new(sosiObject, SrsName, DecimalPlaces));
+
+            
 
             //ConvertAll<RpGrense>(sosiObjects, () => new(sosiObject)
 
-            var rpGrenseSosiObjects = sosiObjects[FeatureMemberName.RpGrense];
+            var rpGrenseSosiObjects = sosiDocument[FeatureMemberName.RpGrense];
             var rpGrenser = rpGrenseSosiObjects.ConvertAll(rpGrense => _rpGrenseMapper.Map(rpGrense, SrsName, DecimalPlaces));
 
-            var rpOmrådeSosiObjects = sosiObjects[FeatureMemberName.RpOmråde];
+            var rpOmrådeSosiObjects = sosiDocument[FeatureMemberName.RpOmråde];
             var rpOmråder = rpOmrådeSosiObjects.ConvertAll<RpOmråde>(sosiObject => new(sosiObject, SrsName, DecimalPlaces, rpGrenser));
 
-            var rpSikringGrenseObjects = sosiObjects["RpSikringGrense"];
+            var rpSikringGrenseObjects = sosiDocument["RpSikringGrense"];
             var rpSikringGrenser = rpSikringGrenseObjects.ConvertAll(sosiObject => _rpHensynGrenseMapper.Map<RpSikringGrense>(sosiObject, SrsName, DecimalPlaces));
 
-            var rpSikringSoneObjects = sosiObjects["RpSikringSone"];
+            var rpSikringSoneObjects = sosiDocument["RpSikringSone"];
             var rpSikringSoner = rpSikringSoneObjects.ConvertAll(sosiObject => _rpSikringSoneMapper.Map(sosiObject, SrsName, DecimalPlaces, rpSikringGrenser));
 
             var g = rpSikringSoner;
@@ -112,20 +181,31 @@ namespace Sosi2Gml.Controllers
       
         public class SosiDocument
         {
-            public SosiDocument()
+            private static readonly Dictionary<string, string> _srsNames = new()
             {
-                ...KOORDSYS
+                { "22", "http://www.opengis.net/def/crs/EPSG/0/25832" },
+                { "23", "http://www.opengis.net/def/crs/EPSG/0/25833" },
+                { "25", "http://www.opengis.net/def/crs/EPSG/0/25835" }
+            };
+
+            private SosiDocument()
+            {
             }
 
-            public CoordinateSystem CoordinateSystem { get; set; }
+            public string SrsName { get; set; }
             public int DecimalCount { get; set; }
             public Envelope Envelope { get; set; }
             public string SosiVersion { get; set; }
             public Dictionary<string, List<SosiObject>> SosiObjects { get; set; }
 
-            public List<SosiObject> GetByType<T>() where T : Feature
+            public List<SosiObject> GetSosiObjects<T>() where T : Feature
             {
-                return null;
+                var objectName = MapperHelper.GetSosiObjectName<T>();
+
+                if (SosiObjects.TryGetValue(objectName, out var sosiObjects))
+                    return sosiObjects;
+
+                return new();
             }
 
             public static SosiDocument Create(Dictionary<string, List<string>> sosiLines)
@@ -135,17 +215,31 @@ namespace Sosi2Gml.Controllers
                     .GroupBy(sosiObject => sosiObject.GetValue("..OBJTYPE") ?? sosiObject.ElementType)
                     .ToDictionary(grouping => grouping.Key, grouping => grouping.Select(sosiObject => sosiObject).ToList());
 
-                var head = sosiObjects[".HODE"].SingleOrDefault();
-                
+                var head = sosiObjects["HODE"].SingleOrDefault();
                 var code = head.GetValue("...KOORDSYS");
-                var uri = Constants.SrsName[code];
-                
-                var coordinateSystem = new CoordinateSystem(code, uri);
+
+                if (!_srsNames.TryGetValue(code, out var srsName))
+                    return null;
+
+                var unit = head.GetValue("...ENHET");
+                var minNorthEasth = head.GetValue("...MIN-NØ");
+                var maxNorthEasth = head.GetValue("...MAX-NØ");
+                var sosiVersion = head.GetValue("..SOSI-VERSJON");
+
+                sosiObjects.Remove("HODE");
+
+                return new SosiDocument
+                {
+                    SrsName = srsName,
+                    DecimalCount = unit.Length - 1 - unit.IndexOf('.'),
+                    Envelope = Envelope.Create(minNorthEasth, maxNorthEasth),
+                    SosiVersion = sosiVersion,
+                    SosiObjects = sosiObjects
+                };
             }
-            
         }
 
-        private static async Task<Dictionary<string, List<SosiObject>>> ReadSosiFileAsync(IFormFile sosiFile)
+        private static async Task<SosiDocument> ReadSosiFileAsync(IFormFile sosiFile)
         {
             using var streamReader = new StreamReader(sosiFile.OpenReadStream(), Encoding.UTF8);
             var sosiLines = new Dictionary<string, List<string>>();
@@ -159,12 +253,7 @@ namespace Sosi2Gml.Controllers
                     sosiLines.Last().Value.Add(line);
             }
 
-            var sosiObjects = sosiLines
-                .Select(kvp => SosiObject.Create(kvp.Key, kvp.Value))
-                .GroupBy(sosiObject => sosiObject.GetValue("..OBJTYPE") ?? sosiObject.ElementType)
-                .ToDictionary(grouping => grouping.Key, grouping => grouping.Select(sosiObject => sosiObject).ToList());
-
-            return sosiObjects;
+            return SosiDocument.Create(sosiLines);
         }
     }
 }

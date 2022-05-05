@@ -1,4 +1,5 @@
-﻿using Sosi2Gml.Application.Models.Sosi;
+﻿using Sosi2Gml.Application.Attributes;
+using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
@@ -7,11 +8,31 @@ using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
+    [SosiObjectName("RpArealformålOmråde")]
     public class RpArealformålOmråde : SurfaceFeature
     {
-        public RpArealformålOmråde(
-            SosiObject sosiObject, string srsName, int decimalPlaces, IEnumerable<RpFormålGrense> rpFormålGrenser) : base(sosiObject, srsName, decimalPlaces, rpFormålGrenser)
+        public RpArealformålOmråde(SosiObject sosiObject, string srsName, int decimalPlaces, IEnumerable<RpFormålGrense> rpFormålGrenser) : 
+            base(sosiObject, srsName, decimalPlaces, rpFormålGrenser)
         {
+            Arealformål = sosiObject.GetValue("..RPAREALFORMÅL");
+            Feltnavn = sosiObject.GetValue("..FELTNAVN");
+            Beskrivelse = sosiObject.GetValue("..BESKRIVELSE");
+            Eierform = sosiObject.GetValue("..EIERFORM");
+            Uteoppholdsareal = sosiObject.GetValue("..UTEAREAL");
+            Avkjørselsbestemmelse = sosiObject.GetValue("..AVKJ");
+            Byggverkbestemmelse = sosiObject.GetValue("..BYGGVERK");
+
+            if (sosiObject.HasValue("..UTNYTT"))
+            {
+                Utnyttinger.Add(new Utnytting
+                {
+                    Utnyttingstype = sosiObject.GetValue("...UTNTYP"),
+                    Utnyttingstall = sosiObject.GetValue("...UTNTALL"),
+                    UtnyttingstallMinimum = sosiObject.GetValue("...UTNTALL_MIN"),
+                });
+            }
+
+            AvgrensesAv.AddRange(Surface.GetFeatures<RpFormålGrense>());
         }
 
         public string Arealformål { get; set; }
@@ -42,7 +63,7 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             if (Kvalitet != null)
                 featureMember.Add(Kvalitet.ToGml(AppNs));
 
-            featureMember.Add(new XElement(AppNs + "område", GetGeomElement()));
+            featureMember.Add(new XElement(AppNs + "område", GeomElement));
             featureMember.Add(new XElement(AppNs + "arealformål", Arealformål));
             featureMember.Add(new XElement(AppNs + "feltnavn", Feltnavn));
             featureMember.Add(new XElement(AppNs + "eierform", Eierform));

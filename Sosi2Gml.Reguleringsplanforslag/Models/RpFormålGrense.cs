@@ -3,9 +3,11 @@ using System.Xml.Linq;
 using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.MapperHelper;
+using Sosi2Gml.Application.Attributes;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
+    [SosiObjectName("RpFormålGrense")]
     public class RpFormålGrense : CurveFeature
     {
         public RpFormålGrense(SosiObject sosiObject, string srsName, int decimalPlaces) : base(sosiObject, srsName, decimalPlaces)
@@ -13,7 +15,6 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         }
 
         public override string FeatureName => "RpFormålGrense";
-        public override XElement GetGeomElement() => base.GetGeomElement();
 
         public override XElement ToGml()
         {
@@ -29,7 +30,7 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             if (Kvalitet != null)
                 featureMember.Add(Kvalitet.ToGml(AppNs));
 
-            featureMember.Add(new XElement(AppNs + "grense", GetGeomElement()));
+            featureMember.Add(new XElement(AppNs + "grense", GeomElement));
 
             return featureMember;
         }

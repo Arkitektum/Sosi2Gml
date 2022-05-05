@@ -7,8 +7,7 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         protected RpHensynSone(SosiObject sosiObject, string srsName, int decimalPlaces, IEnumerable<CurveFeature> curveFeatures) : 
             base(sosiObject, srsName, decimalPlaces, curveFeatures)
         {
-            
-        
+            HensynSonenavn = sosiObject.GetValue("..HENSYNSONENAVN");
         }
 
         public string HensynSonenavn { get; set; }

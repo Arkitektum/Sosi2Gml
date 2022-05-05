@@ -1,9 +1,11 @@
-﻿using Sosi2Gml.Application.Models.Sosi;
+﻿using Sosi2Gml.Application.Attributes;
+using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
-    public class RpSikringGrense : RpHensynGrense
+    [SosiObjectName("RpSikringGrense")]
+    public class RpSikringGrense : CurveFeature
     {
         public RpSikringGrense(SosiObject sosiObject, string srsName, int decimalPlaces) : base(sosiObject, srsName, decimalPlaces)
         {
@@ -11,9 +13,6 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
         public override string FeatureName => "RpSikringGrense";
 
-        public override XElement ToGml()
-        {
-            throw new NotImplementedException();
-        }
+        public override XElement ToGml() => null;
     }
 }

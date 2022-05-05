@@ -1,10 +1,11 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Sosi2Gml.Application.Models.Sosi
 {
     public class SosiValues
     {
-        private static readonly Regex _propertyRegex = new(@"^\.+((?!(NØ|REF)).)*$", RegexOptions.Compiled);
+        private static readonly Regex _propertyRegex = new(@"^\.+.*$", RegexOptions.Compiled);
         private static readonly Regex _nameAndValueRegex = new(@"^(?<name>(\.+[A-ZÆØÅ-]+))( (?<value>.*))?", RegexOptions.Compiled);
 
         private SosiValues(List<string> lines, Dictionary<string, string> objectProperties)
@@ -18,7 +19,7 @@ namespace Sosi2Gml.Application.Models.Sosi
 
         public static SosiValues Create(List<string> values)
         {
-            var propertyLines = values.Where(value => _propertyRegex.IsMatch(value));
+            var propertyLines = values.Where(value => _propertyRegex.IsMatch(value) && !value.StartsWith("..NØ") && !value.StartsWith("..REF"));
             var objectProperties = new Dictionary<string, string>();
 
             foreach (var line in propertyLines)
