@@ -1,10 +1,7 @@
-﻿using Sosi2Gml.Application.Models.Sosi;
+﻿using Sosi2Gml.Application.Attributes;
+using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
-using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
-using static Sosi2Gml.Application.Helpers.MapperHelper;
-using Sosi2Gml.Application.Helpers;
-using Sosi2Gml.Application.Attributes;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -17,24 +14,11 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
         public override string FeatureName => "RpGrense";
 
-        public override XElement ToGml()
+        public override XElement ToGml(XNamespace appNs)
         {
-            var featureMember = new XElement(AppNs + FeatureName, new XAttribute(GmlNs + "id", GmlId));
+            var featureMember = base.ToGml(appNs);
 
-            featureMember.Add(Identifikasjon.ToGml(AppNs));
-
-            if (FørsteDigitaliseringsdato.HasValue)
-                featureMember.Add(new XElement(AppNs + "førsteDigitaliseringsdato", FormatDateTime(FørsteDigitaliseringsdato.Value)));
-
-            featureMember.Add(new XElement(AppNs + "oppdateringsdato", FormatDateTime(Oppdateringsdato)));
-
-            if (Kvalitet != null)
-                featureMember.Add(Kvalitet.ToGml(AppNs));
-
-            var curveSegment = CartographicElementType == CartographicElementType.Kurve ? GmlHelper.CreateLineStringSegment(Points) : GmlHelper.CreateArc(Points);
-            var curve = GmlHelper.CreateCurve(new[] { curveSegment }, $"{GmlId}-0", SrsName);
-
-            featureMember.Add(new XElement(AppNs + "grense", curve));
+            featureMember.Add(new XElement(AppNs + "grense", base.GeomElement));
 
             return featureMember;
         }

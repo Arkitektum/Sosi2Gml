@@ -1,9 +1,7 @@
 ﻿using Sosi2Gml.Application.Attributes;
 using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
-using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
-using static Sosi2Gml.Application.Helpers.MapperHelper;
 using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
@@ -18,26 +16,28 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             Høydereferansesystem = sosiObject.GetValue("...HØYDE-REF") ?? "NN2000";
         }
 
+        public override string FeatureName => "RpRegulertHøyde";
         public string RegulertHøyde { get; set; }
         public string Høydereferansesystem { get; set; }
         public string TypeHøyde { get; } = "GH";
         public RpOmråde Planområde { get; set; }
 
-        public override string FeatureName => "RpRegulertHøyde";
-
-        public override XElement ToGml()
+        public override void AddAssociations(List<Feature> features)
         {
-            var featureMember = new XElement(AppNs + FeatureName, new XAttribute(GmlNs + "id", GmlId));
+            var planområder = features.OfType<RpOmråde>().ToList();
 
-            featureMember.Add(Identifikasjon.ToGml(AppNs));
+            if (planområder.Count == 1)
+                Planområde = planområder.First();
+            else
+                Planområde = planområder.FirstOrDefault(planområde => planområde.Geometry?.Intersects(Geometry) ?? false);
 
-            if (FørsteDigitaliseringsdato.HasValue)
-                featureMember.Add(new XElement(AppNs + "førsteDigitaliseringsdato", FormatDateTime(FørsteDigitaliseringsdato.Value)));
+            if (Planområde != null)
+                Planområde.RegulertHøyde.Add(this);
+        }
 
-            featureMember.Add(new XElement(AppNs + "oppdateringsdato", FormatDateTime(Oppdateringsdato)));
-
-            if (Kvalitet != null)
-                featureMember.Add(Kvalitet.ToGml(AppNs));
+        public override XElement ToGml(XNamespace appNs)
+        {
+            var featureMember = base.ToGml(appNs);
             
             featureMember.Add(new XElement(AppNs + "senterlinje", GeomElement));
 

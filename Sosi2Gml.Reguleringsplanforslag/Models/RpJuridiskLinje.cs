@@ -4,7 +4,6 @@ using System.Xml.Linq;
 using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
 using static Sosi2Gml.Application.Helpers.MapperHelper;
-using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -16,31 +15,33 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             JuridiskLinje = sosiObject.GetValue("..RPJURLINJE");
         }
 
+        public override string FeatureName => "RpJuridiskLinje";
         public string JuridiskLinje { get; set; }
         public RpOmråde Planområde { get; set; }
 
-        public override string FeatureName => "RpJuridiskLinje";
-
-        public override XElement ToGml()
+        public override void AddAssociations(List<Feature> features)
         {
-            var featureMember = new XElement(AppNs + FeatureName, new XAttribute(GmlNs + "id", GmlId));
+            var planområder = features.OfType<RpOmråde>().ToList();
 
-            featureMember.Add(Identifikasjon.ToGml(AppNs));
-
-            if (FørsteDigitaliseringsdato.HasValue)
-                featureMember.Add(new XElement(AppNs + "førsteDigitaliseringsdato", FormatDateTime(FørsteDigitaliseringsdato.Value)));
-
-            featureMember.Add(new XElement(AppNs + "oppdateringsdato", FormatDateTime(Oppdateringsdato)));
-
-            if (Kvalitet != null)
-                featureMember.Add(Kvalitet.ToGml(AppNs));
-
-            featureMember.Add(new XElement(AppNs + "senterlinje", GeomElement));
-
-            featureMember.Add(new XElement(AppNs + "juridisklinje", JuridiskLinje));
+            if (planområder.Count == 1)
+                Planområde = planområder.First();
+            else
+                Planområde = planområder.FirstOrDefault(planområde => planområde.Geometry?.Intersects(Geometry) ?? false);
 
             if (Planområde != null)
-                featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
+                Planområde.JuridiskLinje.Add(this);
+        }
+
+        public override XElement ToGml(XNamespace appNs)
+        {
+            var featureMember = base.ToGml(appNs);
+
+            featureMember.Add(new XElement(appNs + "senterlinje", GeomElement));
+
+            featureMember.Add(new XElement(appNs + "juridisklinje", JuridiskLinje));
+
+            if (Planområde != null)
+                featureMember.Add(CreateXLink(appNs + "planområde", Planområde.GmlId));
 
             return featureMember;
         }

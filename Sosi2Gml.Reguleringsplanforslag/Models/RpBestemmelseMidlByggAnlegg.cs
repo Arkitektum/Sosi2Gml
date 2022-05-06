@@ -14,7 +14,7 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
         public override string FeatureName => "RpBestemmelseMidlByggAnlegg";
 
-        public override XElement ToGml()
+        public override XElement ToGml(XNamespace appNs)
         {
             throw new NotImplementedException();
         }

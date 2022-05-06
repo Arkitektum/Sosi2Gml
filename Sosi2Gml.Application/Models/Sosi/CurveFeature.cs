@@ -12,6 +12,8 @@ namespace Sosi2Gml.Application.Models.Sosi
             Points = GetPoints(SosiValues, decimalPlaces);
         }
 
+        public List<Point> Points { get; private set; }
+
         public override XElement GeomElement
         {
             get
@@ -23,6 +25,6 @@ namespace Sosi2Gml.Application.Models.Sosi
             }
         }
 
-        public List<Point> Points { get; private set; }
+        public override XElement ToGml(XNamespace appNs) => base.ToGml(appNs);
     }
 }

@@ -1,7 +1,6 @@
 ﻿using Sosi2Gml.Application.Attributes;
 using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
-using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -17,11 +16,11 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         public string Støy { get; set; }
         public override string FeatureName => "RpStøySone";
 
-        public override XElement ToGml()
+        public override XElement ToGml(XNamespace appNs)
         {
-            var featureMember = base.ToGml();
+            var featureMember = base.ToGml(appNs);
 
-            featureMember.Add(new XElement(AppNs + "støy", Støy));
+            featureMember.Add(new XElement(appNs + "støy", Støy));
 
             return featureMember;
         }

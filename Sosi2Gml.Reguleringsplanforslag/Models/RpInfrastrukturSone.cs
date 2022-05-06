@@ -17,11 +17,11 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         public string Infrastruktur { get; set; }
         public override string FeatureName => "RpInfrastrukturSone";
 
-        public override XElement ToGml()
+        public override XElement ToGml(XNamespace appNs)
         {
-            var featureMember = base.ToGml();
+            var featureMember = base.ToGml(appNs);
 
-            featureMember.Add(new XElement(AppNs + "infrastruktur", Infrastruktur));
+            featureMember.Add(new XElement(appNs + "infrastruktur", Infrastruktur));
 
             return featureMember;
         }

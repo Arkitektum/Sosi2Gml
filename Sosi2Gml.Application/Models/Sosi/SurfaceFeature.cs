@@ -16,6 +16,7 @@ namespace Sosi2Gml.Application.Models.Sosi
         }
 
         public Surface Surface { get; set; } = new();
+        public override XElement ToGml(XNamespace appNs) => base.ToGml(appNs);
 
         public override XElement GeomElement
         {

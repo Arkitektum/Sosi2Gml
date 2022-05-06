@@ -1,10 +1,7 @@
 ﻿using Sosi2Gml.Application.Attributes;
 using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
-using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
-using static Sosi2Gml.Application.Helpers.MapperHelper;
-using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -56,52 +53,44 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             if (planområder.Count == 1)
                 Planområde = planområder.First();
             else
-                Planområde = planområder.SingleOrDefault(planområde => planområde.Geometry.Intersects(Geometry));
+                Planområde = planområder.FirstOrDefault(planområde => planområde.Geometry?.Intersects(Geometry) ?? false);
 
-            Planområde.Formål.Add(this);
+            if (Planområde != null)
+                Planområde.Formål.Add(this);
         }
 
-        public override XElement ToGml()
+        public override XElement ToGml(XNamespace appNs)
         {
-            var featureMember = new XElement(AppNs + FeatureName, new XAttribute(GmlNs + "id", GmlId));
+            var featureMember = base.ToGml(appNs);
 
-            featureMember.Add(Identifikasjon.ToGml(AppNs));
-
-            if (FørsteDigitaliseringsdato.HasValue)
-                featureMember.Add(new XElement(AppNs + "førsteDigitaliseringsdato", FormatDateTime(FørsteDigitaliseringsdato.Value)));
-
-            featureMember.Add(new XElement(AppNs + "oppdateringsdato", FormatDateTime(Oppdateringsdato)));
-
-            if (Kvalitet != null)
-                featureMember.Add(Kvalitet.ToGml(AppNs));
-
-            featureMember.Add(new XElement(AppNs + "område", GeomElement));
-            featureMember.Add(new XElement(AppNs + "arealformål", Arealformål));
-            featureMember.Add(new XElement(AppNs + "feltnavn", Feltnavn));
-            featureMember.Add(new XElement(AppNs + "eierform", Eierform));
+            featureMember.Add(new XElement(appNs + "område", GeomElement));
+            featureMember.Add(new XElement(appNs + "arealformål", Arealformål));
+            featureMember.Add(new XElement(appNs + "feltnavn", Feltnavn));
+            featureMember.Add(new XElement(appNs + "eierform", Eierform));
 
             if (Utnyttinger.Any())
-                featureMember.Add(new XElement(AppNs + "utnytting", Utnyttinger.Select(utnytting => utnytting.ToGml(AppNs))));
+                featureMember.Add(new XElement(appNs + "utnytting", Utnyttinger.Select(utnytting => utnytting.ToGml(appNs))));
 
             if (!string.IsNullOrWhiteSpace(Uteoppholdsareal))
-                featureMember.Add(new XElement(AppNs + "uteoppholdsareal", Uteoppholdsareal));
+                featureMember.Add(new XElement(appNs + "uteoppholdsareal", Uteoppholdsareal));
 
             if (!string.IsNullOrWhiteSpace(Avkjørselsbestemmelse))
-                featureMember.Add(new XElement(AppNs + "avkjørselsbestemmelse", Avkjørselsbestemmelse));
+                featureMember.Add(new XElement(appNs + "avkjørselsbestemmelse", Avkjørselsbestemmelse));
 
             if (!string.IsNullOrWhiteSpace(Byggverkbestemmelse))
-                featureMember.Add(new XElement(AppNs + "byggverkbestemmelse", Byggverkbestemmelse));
+                featureMember.Add(new XElement(appNs + "byggverkbestemmelse", Byggverkbestemmelse));
 
             if (!string.IsNullOrWhiteSpace(Uteoppholdsareal))
-                featureMember.Add(new XElement(AppNs + "Uteoppholdsareal", Uteoppholdsareal));
+                featureMember.Add(new XElement(appNs + "Uteoppholdsareal", Uteoppholdsareal));
 
             if (AvgrensesAv.Any())
-                featureMember.Add(AvgrensesAv.Select(formålGrense => CreateXLink(AppNs + "avgrensesAv", formålGrense.GmlId)));
+                featureMember.Add(AvgrensesAv.Select(formålGrense => CreateXLink(appNs + "avgrensesAv", formålGrense.GmlId)));
             
-            featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
+            if (Planområde != null)
+                featureMember.Add(CreateXLink(appNs + "planområde", Planområde.GmlId));
 
             if (Påskrifter.Any())
-                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(AppNs + "påskrift", påskrift.GmlId)));
+                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(appNs + "påskrift", påskrift.GmlId)));
 
             return featureMember;
         }

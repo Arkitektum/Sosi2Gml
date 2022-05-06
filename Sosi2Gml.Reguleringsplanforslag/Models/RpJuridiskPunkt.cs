@@ -2,10 +2,7 @@
 using Sosi2Gml.Application.Models.Geometries;
 using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
-using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
-using static Sosi2Gml.Application.Helpers.MapperHelper;
-using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -18,38 +15,40 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             JuridiskPunkt = sosiObject.GetValue("..RPJURPUNKT");
         }
 
+        public override string FeatureName => "RpJuridiskPunkt";        
         public double[] Symbolretning { get; set; }
         public string JuridiskPunkt { get; set; }
         public RpOmråde Planområde { get; set; }
 
-        public override string FeatureName => "RpJuridiskPunkt";
-
-        public override XElement ToGml()
+        public override void AddAssociations(List<Feature> features)
         {
-            var featureMember = new XElement(AppNs + FeatureName, new XAttribute(GmlNs + "id", GmlId));
+            var planområder = features.OfType<RpOmråde>().ToList();
 
-            featureMember.Add(Identifikasjon.ToGml(AppNs));
+            if (planområder.Count == 1)
+                Planområde = planområder.First();
+            else
+                Planområde = planområder.FirstOrDefault(planområde => planområde.Geometry?.Intersects(Geometry) ?? false);
 
-            if (FørsteDigitaliseringsdato.HasValue)
-                featureMember.Add(new XElement(AppNs + "førsteDigitaliseringsdato", FormatDateTime(FørsteDigitaliseringsdato.Value)));
+            if (Planområde != null)
+                Planområde.JuridiskPunkt.Add(this);
+        }
 
-            featureMember.Add(new XElement(AppNs + "oppdateringsdato", FormatDateTime(Oppdateringsdato)));
+        public override XElement ToGml(XNamespace appNs)
+        {
+            var featureMember = base.ToGml(appNs);
 
-            if (Kvalitet != null)
-                featureMember.Add(Kvalitet.ToGml(AppNs));
+            featureMember.Add(new XElement(appNs + "posisjon", CreatePoint(Points.First(), $"{GmlId}-0", SrsName)));
 
-            featureMember.Add(new XElement(AppNs + "posisjon", CreatePoint(Points.First(), GmlId, SrsName)));
-
-            featureMember.Add(new XElement(AppNs + "symbolretning",
+            featureMember.Add(new XElement(appNs + "symbolretning",
                 new XAttribute("srsDimension", 2),
                 new XAttribute("srsName", SrsName),
                 FormattableString.Invariant($"{Symbolretning[0]} {Symbolretning[1]}")
             ));
 
-            featureMember.Add(new XElement(AppNs + "juridiskpunkt", JuridiskPunkt));
+            featureMember.Add(new XElement(appNs + "juridiskpunkt", JuridiskPunkt));
 
             if (Planområde != null)
-                featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
+                featureMember.Add(CreateXLink(appNs + "planområde", Planområde.GmlId));
 
             return featureMember;
         }

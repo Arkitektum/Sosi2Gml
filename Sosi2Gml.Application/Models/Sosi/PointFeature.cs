@@ -13,7 +13,7 @@ namespace Sosi2Gml.Application.Models.Sosi
         }
 
         public override XElement GeomElement => CreatePoint(Points.First(), $"{GmlId}-0", SrsName);
-
+        public override XElement ToGml(XNamespace appNs) => base.ToGml(appNs);
         public List<Point> Points { get; private set; }
     }
 }

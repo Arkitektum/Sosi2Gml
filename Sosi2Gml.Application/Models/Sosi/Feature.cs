@@ -13,7 +13,7 @@ namespace Sosi2Gml.Application.Models.Sosi
         public abstract string FeatureName { get; }
         public string GmlId { get; set; } = CreateGmlId();
         public SosiValues SosiValues { get; private set; }
-        public virtual XElement ToGml() => null;
+        public virtual XElement ToGml(XNamespace appNs) => null;
 
         public virtual void AddAssociations(List<Feature> features)
         {

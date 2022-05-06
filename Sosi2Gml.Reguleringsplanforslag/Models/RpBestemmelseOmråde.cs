@@ -13,8 +13,9 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         }
 
         public override string FeatureName => "RpBestemmelseOmråde";
+        public List<RpPåskrift> Påskrifter { get; set; }
 
-        public override XElement ToGml()
+        public override XElement ToGml(XNamespace appNs)
         {
             throw new NotImplementedException();
         }

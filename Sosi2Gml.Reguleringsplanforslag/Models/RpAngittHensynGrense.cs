@@ -13,6 +13,6 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
         public override string FeatureName => "RpAngittHensynGrense";
 
-        public override XElement ToGml() => null;
+        public override XElement ToGml(XNamespace appNs) => null;
     }
 }

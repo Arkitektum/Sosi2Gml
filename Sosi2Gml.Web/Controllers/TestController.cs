@@ -1,14 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using Sosi2Gml.Application.Mappers.Interfaces;
+using Sosi2Gml.Application.Helpers;
 using Sosi2Gml.Application.Models.Sosi;
-using Sosi2Gml.Reguleringsplanforslag.Constants;
-using Sosi2Gml.Reguleringsplanforslag.Mappers;
-using Sosi2Gml.Reguleringsplanforslag.Mappers.Interfaces;
 using Sosi2Gml.Reguleringsplanforslag.Models;
 using System.Text;
 using System.Text.RegularExpressions;
-using Sosi2Gml.Application.Constants;
-using Sosi2Gml.Application.Helpers;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
 
@@ -20,33 +15,8 @@ namespace Sosi2Gml.Controllers
     {
         private static Regex _sosiObjectRegex = new(@"^\.[A-ZÆØÅ]+", RegexOptions.Compiled);
 
-        private readonly IGmlCurveFeatureMapper<RpGrense> _rpGrenseMapper;
-        private readonly IGmlCurveFeatureMapper<RpFormålGrense> _rpFormålGrenseMapper;
-        private readonly IGmlFeatureMapper<RpSikringGrense> _rpSikringGrenseMapper;
-        private readonly IGmlSurfaceFeatureMapper<RpOmråde, RpGrense> _rpOmrådeMapper;
-        private readonly IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense> _rpArealformålOmrådeMapper;
-        private readonly IGmlSurfaceFeatureMapper<RpSikringSone, RpSikringGrense> _rpSikringSoneMapper;
-        private readonly IGmlFeatureMapper<RpJuridiskPunkt> _rpJuridiskPunktMapper;
-        private readonly IServiceProvider _serviceProvider;
-
-        public TestController(
-             IGmlCurveFeatureMapper<RpGrense> rpGrenseMapper,
-             IGmlCurveFeatureMapper<RpFormålGrense> rpFormålGrenseMapper,
-             //IGmlFeatureMapper<RpSikringGrense> rpSikringGrenseMapper,
-             IGmlSurfaceFeatureMapper<RpOmråde, RpGrense> rpOmrådeMapper,
-             IGmlSurfaceFeatureMapper<RpArealformålOmråde, RpFormålGrense> rpArealformålOmrådeMapper,
-             IGmlSurfaceFeatureMapper<RpSikringSone, RpSikringGrense> rpSikringSoneMapper,
-             IGmlFeatureMapper<RpJuridiskPunkt> rpJuridiskPunktMapper,
-             IServiceProvider serviceProvider)
+        public TestController()
         {
-            _rpGrenseMapper = rpGrenseMapper;
-            _rpFormålGrenseMapper = rpFormålGrenseMapper;
-           // _rpSikringGrenseMapper = rpSikringGrenseMapper;
-            _rpOmrådeMapper = rpOmrådeMapper;
-            _rpArealformålOmrådeMapper = rpArealformålOmrådeMapper;
-            _rpJuridiskPunktMapper = rpJuridiskPunktMapper;
-            _rpSikringSoneMapper = rpSikringSoneMapper;
-            _serviceProvider = serviceProvider;
         }
 
         private T Map<T>(SosiObject sosiObject) where T : Feature, new()
@@ -134,7 +104,7 @@ namespace Sosi2Gml.Controllers
 
             foreach (var feature in features)
             {
-                var element = feature.ToGml();
+                var element = feature.ToGml(_appNs);
 
                 if (element != null)
                     featureCollection.Add(new XElement(_gmlNs + "featureMember", element));
@@ -167,10 +137,13 @@ namespace Sosi2Gml.Controllers
             MapCurveAndSurfaceFeatures<RpSikringGrense, RpSikringSone>(document, features);
             MapCurveAndSurfaceFeatures<RpStøyGrense, RpStøySone>(document, features);
             MapCurveFeatures<RpJuridiskLinje>(document, features);
-            MapCurveFeatures<RpRegulertHøyde>(document, features);
+            //MapCurveFeatures<RpRegulertHøyde>(document, features);
             MapPointFeatures<RpJuridiskPunkt>(document, features);
+            MapPointFeatures<RpPåskrift>(document, features);
 
+            var s = DateTime.Now;
             features.ForEach(feature => feature.AddAssociations(features));
+            var e = DateTime.Now.Subtract(s).TotalSeconds;
 
             var memoryStream = await CreateGmlDocument(document, features);
 

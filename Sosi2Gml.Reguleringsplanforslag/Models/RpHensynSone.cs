@@ -26,32 +26,24 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             if (planområder.Count == 1)
                 Planområde = planområder.First();
             else
-                Planområde = planområder.SingleOrDefault(planområde => planområde.Geometry.Intersects(Geometry));
+                Planområde = planområder.FirstOrDefault(planområde => planområde.Geometry?.Intersects(Geometry) ?? false);
 
-            Planområde.Hensyn.Add(this);
+            if (Planområde != null)
+                Planområde.Hensyn.Add(this);
         }
 
-        public override XElement ToGml()
+        public override XElement ToGml(XNamespace appNs)
         {
-            var featureMember = new XElement(AppNs + FeatureName, new XAttribute(GmlNs + "id", GmlId));
+            var featureMember = base.ToGml(appNs);
 
-            featureMember.Add(Identifikasjon.ToGml(AppNs));
+            featureMember.Add(new XElement(appNs + "område", GeomElement));
+            featureMember.Add(new XElement(appNs + "hensynSonenavn", HensynSonenavn));
 
-            if (FørsteDigitaliseringsdato.HasValue)
-                featureMember.Add(new XElement(AppNs + "førsteDigitaliseringsdato", FormatDateTime(FørsteDigitaliseringsdato.Value)));
-
-            featureMember.Add(new XElement(AppNs + "oppdateringsdato", FormatDateTime(Oppdateringsdato)));
-
-            if (Kvalitet != null)
-                featureMember.Add(Kvalitet.ToGml(AppNs));
-
-            featureMember.Add(new XElement(AppNs + "område", GeomElement));
-            featureMember.Add(new XElement(AppNs + "hensynSonenavn", HensynSonenavn));
-
-            featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
+            if (Planområde != null)
+                featureMember.Add(CreateXLink(appNs + "planområde", Planområde.GmlId));
 
             if (Påskrifter.Any())
-                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(AppNs + "påskrift", påskrift.GmlId)));
+                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(appNs + "påskrift", påskrift.GmlId)));
 
             return featureMember;
         }

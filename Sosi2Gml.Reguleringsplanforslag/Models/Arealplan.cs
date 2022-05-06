@@ -3,7 +3,6 @@ using System.Xml.Linq;
 using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
 using static Sosi2Gml.Application.Helpers.MapperHelper;
-using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -41,32 +40,32 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         {
         }
 
-        public override XElement ToGml()
+        public override XElement ToGml(XNamespace appNs)
         {
-            var featureMember = new XElement(AppNs + FeatureName, new XAttribute(GmlNs + "id", GmlId));
+            var featureMember = new XElement(appNs + FeatureName, new XAttribute(GmlNs + "id", GmlId));
 
-            featureMember.Add(Identifikasjon.ToGml(AppNs));
-            featureMember.Add(new XElement(AppNs + "oppdateringsdato", FormatDateTime(Oppdateringsdato)));
+            featureMember.Add(Identifikasjon.ToGml(appNs));
+            featureMember.Add(new XElement(appNs + "oppdateringsdato", FormatDateTime(Oppdateringsdato)));
 
-            featureMember.Add(new XElement(AppNs + "nasjonalArealplanId",
-                new XElement(AppNs + "NasjonalArealplanId",
-                    new XElement(AppNs + "administrativEnhet",
-                        new XElement(AppNs + "AdministrativEnhetskode",
-                            new XElement(AppNs + "kommunenummer", Kommunenummer)
+            featureMember.Add(new XElement(appNs + "nasjonalArealplanId",
+                new XElement(appNs + "NasjonalArealplanId",
+                    new XElement(appNs + "administrativEnhet",
+                        new XElement(appNs + "AdministrativEnhetskode",
+                            new XElement(appNs + "kommunenummer", Kommunenummer)
                         )
                     ),
-                    new XElement(AppNs + "planidentifikasjon", Planidentifikasjon)
+                    new XElement(appNs + "planidentifikasjon", Planidentifikasjon)
                 )
             ));
 
-            featureMember.Add(new XElement(AppNs + "plantype", Plantype));
-            featureMember.Add(new XElement(AppNs + "plannavn", Plannavn));
-            featureMember.Add(new XElement(AppNs + "planstatus", Planstatus));
-            featureMember.Add(new XElement(AppNs + "omPlanbestemmelser", OmPlanbestemmelser));
-            featureMember.Add(new XElement(AppNs + "lovreferanse", Lovreferanse));
+            featureMember.Add(new XElement(appNs + "plantype", Plantype));
+            featureMember.Add(new XElement(appNs + "plannavn", Plannavn));
+            featureMember.Add(new XElement(appNs + "planstatus", Planstatus));
+            featureMember.Add(new XElement(appNs + "omPlanbestemmelser", OmPlanbestemmelser));
+            featureMember.Add(new XElement(appNs + "lovreferanse", Lovreferanse));
 
             foreach (var rpOmråde in RpOmråder)
-                featureMember.Add(CreateXLink(AppNs + "rpOmråde", rpOmråde.GmlId));
+                featureMember.Add(CreateXLink(appNs + "rpOmråde", rpOmråde.GmlId));
 
             return featureMember;
         }

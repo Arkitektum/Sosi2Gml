@@ -1,6 +1,7 @@
 ﻿using OSGeo.OGR;
 using Sosi2Gml.Application.Helpers;
 using System.Xml.Linq;
+using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.MapperHelper;
 
 namespace Sosi2Gml.Application.Models.Sosi
@@ -33,5 +34,22 @@ namespace Sosi2Gml.Application.Models.Sosi
         public CartographicElementType CartographicElementType { get; private set; }
         public Geometry Geometry => GeometryHelper.GeometryFromGml(GeomElement);
         public virtual XElement GeomElement => null;
+
+        public override XElement ToGml(XNamespace appNs)
+        {
+            var featureMember = new XElement(appNs + FeatureName, new XAttribute(GmlNs + "id", GmlId));
+
+            featureMember.Add(Identifikasjon.ToGml(appNs));
+
+            if (FørsteDigitaliseringsdato.HasValue)
+                featureMember.Add(new XElement(appNs + "førsteDigitaliseringsdato", FormatDateTime(FørsteDigitaliseringsdato.Value)));
+
+            featureMember.Add(new XElement(appNs + "oppdateringsdato", FormatDateTime(Oppdateringsdato)));
+
+            if (Kvalitet != null)
+                featureMember.Add(Kvalitet.ToGml(appNs));
+
+            return featureMember;
+        }
     }
 }
