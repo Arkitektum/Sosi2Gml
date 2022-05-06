@@ -16,7 +16,7 @@ namespace Sosi2Gml.Application.Models.Sosi
                 return null;
 
             if (SosiValues.ObjectProperties.TryGetValue(key, out var value))
-                return value.Trim('"', '\'');
+                return value.Trim(' ', '"', '\'');
 
             return null;
         }

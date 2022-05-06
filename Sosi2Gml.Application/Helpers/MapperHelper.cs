@@ -47,10 +47,7 @@ namespace Sosi2Gml.Application.Helpers
             };
         }
 
-        public static string GenerateGmlId()
-        {
-            return $"_{Guid.NewGuid()}";
-        }
+
 
         public static List<Point> GetPoints(SosiValues sosiValues, int decimalPlaces)
         {

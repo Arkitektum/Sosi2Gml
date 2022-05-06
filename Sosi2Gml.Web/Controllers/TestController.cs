@@ -9,6 +9,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Sosi2Gml.Application.Constants;
 using Sosi2Gml.Application.Helpers;
+using System.Xml.Linq;
+using static Sosi2Gml.Application.Helpers.GmlHelper;
 
 namespace Sosi2Gml.Controllers
 {
@@ -96,25 +98,64 @@ namespace Sosi2Gml.Controllers
             features.AddRange(surfaceFeatures);
         }
 
+        public void MapFeature<TFeature>(SosiDocument document, Func<SosiDocument, TFeature> func, List<Feature> features)
+            where TFeature : Feature
+        {
+            var feature = func.Invoke(document);
+            features.Add(feature);
+        }
+
+        private static readonly XNamespace _xmlNs = "http://www.w3.org/2001/XMLSchema";
+        private static readonly XNamespace _gmlNs = "http://www.opengis.net/gml/3.2";
+        private static readonly XNamespace _appNs = "http://skjema.geonorge.no/SOSI/produktspesifikasjon/Reguleringsplanforslag/5.0";
+        private static readonly XNamespace _scNs = "http://www.interactive-instruments.de/ShapeChange/AppInfo";
+        private static readonly XNamespace _xlinkNs = "http://www.w3.org/1999/xlink";
+        private static readonly XNamespace _xsiNs = "http://www.w3.org/2001/XMLSchema-instance";
+        private static readonly string _schemaLocation = "https://skjema.geonorge.no/SOSITEST/produktspesifikasjon/Reguleringsplanforslag/5.0/reguleringsplanforslag-5.0_rev20211104.xsd";
+
+        private static async Task<MemoryStream> CreateGmlDocument(SosiDocument sosiDocument, List<Feature> features)
+        {
+            var document = new XDocument(new XDeclaration("1.0", "utf-8", null));
+
+            var featureCollection = new XElement(_gmlNs + "FeatureCollection",
+                new XAttribute(XNamespace.Xmlns + "gml", _gmlNs),
+                new XAttribute(XNamespace.Xmlns + "app", _appNs),
+                new XAttribute(XNamespace.Xmlns + "sc", _scNs),
+                new XAttribute("xmlns", _xmlNs),
+                new XAttribute(XNamespace.Xmlns + "xlink", _xlinkNs),
+                new XAttribute(XNamespace.Xmlns + "xsi", _xsiNs),
+                new XAttribute(_xsiNs + "schemaLocation", $"{_appNs} {_schemaLocation}"),
+                new XAttribute(_gmlNs + "id", CreateGmlId())
+            );
+
+            var envelope = CreateEnvelope(sosiDocument.Envelope, sosiDocument.SrsName);
+
+            featureCollection.Add(envelope);
+
+            foreach (var feature in features)
+            {
+                var element = feature.ToGml();
+
+                if (element != null)
+                    featureCollection.Add(new XElement(_gmlNs + "featureMember", element));
+            }
+
+            document.Add(featureCollection);
+
+            var memoryStream = new MemoryStream();
+            await document.SaveAsync(memoryStream, SaveOptions.None, default);
+            memoryStream.Position = 0;
+
+            return memoryStream;
+        }
+
         [HttpPost]
         public async Task<IActionResult> Sosi2Gml(IFormFile sosiFile)
         {
-            const string SrsName = "http://www.opengis.net/def/crs/EPSG/0/25832";
-            const int DecimalPlaces = 2;
-
             var document = await ReadSosiFileAsync(sosiFile);
+            var features = new List<Feature>();
 
-            /*MapCurveAndSurfaceFeatures(
-                document, 
-                (sosiObject, srsName, decimalPlaces) => new RpGrense(sosiObject, srsName, decimalPlaces),
-                (sosiObject, srsName, decimalPlaces, curveFeatures) => new RpOmråde(sosiObject, srsName, decimalPlaces, curveFeatures)
-            );*/
-
-            var s = DateTime.Now;
-
-            var arealplan = new Arealplan(document.GetSosiObjects<RpOmråde>().First());
-            var features = new List<Feature> { arealplan };
-
+            MapFeature<Arealplan>(document, document => new(document.GetSosiObjects<RpOmråde>().First()), features);
             MapCurveAndSurfaceFeatures<RpGrense, RpOmråde>(document, features);
             MapCurveAndSurfaceFeatures<RpFormålGrense, RpArealformålOmråde>(document, features);
             MapCurveAndSurfaceFeatures<RpAngittHensynGrense, RpAngittHensynSone>(document, features);
@@ -129,54 +170,11 @@ namespace Sosi2Gml.Controllers
             MapCurveFeatures<RpRegulertHøyde>(document, features);
             MapPointFeatures<RpJuridiskPunkt>(document, features);
 
-            var e = s;
+            features.ForEach(feature => feature.AddAssociations(features));
 
-            //var hode = sosiObjects.First();
+            var memoryStream = await CreateGmlDocument(document, features);
 
-            /*var b = ConvertAll<RpGrense>(sosiDocument, sosiObject => new(sosiObject, SrsName, DecimalPlaces));
-
-            
-
-            //ConvertAll<RpGrense>(sosiObjects, () => new(sosiObject)
-
-            var rpGrenseSosiObjects = sosiDocument[FeatureMemberName.RpGrense];
-            var rpGrenser = rpGrenseSosiObjects.ConvertAll(rpGrense => _rpGrenseMapper.Map(rpGrense, SrsName, DecimalPlaces));
-
-            var rpOmrådeSosiObjects = sosiDocument[FeatureMemberName.RpOmråde];
-            var rpOmråder = rpOmrådeSosiObjects.ConvertAll<RpOmråde>(sosiObject => new(sosiObject, SrsName, DecimalPlaces, rpGrenser));
-
-            var rpSikringGrenseObjects = sosiDocument["RpSikringGrense"];
-            var rpSikringGrenser = rpSikringGrenseObjects.ConvertAll(sosiObject => _rpHensynGrenseMapper.Map<RpSikringGrense>(sosiObject, SrsName, DecimalPlaces));
-
-            var rpSikringSoneObjects = sosiDocument["RpSikringSone"];
-            var rpSikringSoner = rpSikringSoneObjects.ConvertAll(sosiObject => _rpSikringSoneMapper.Map(sosiObject, SrsName, DecimalPlaces, rpSikringGrenser));
-
-            var g = rpSikringSoner;
-
-            /*var rpJuridiskPunktObjects = sosiObjects[FeatureMemberName.RpJuridiskPunkt];
-            var rpJuridiskePunkt = rpJuridiskPunktObjects.ConvertAll(sosiObject => _rpJuridiskPunktMapper.Map(sosiObject, SrsName, DecimalPlaces));
-
-            var rpGrenseSosiObjects = sosiObjects[FeatureMemberName.RpGrense];
-            var rpGrenser = rpGrenseSosiObjects.ConvertAll(rpGrense => _rpGrenseMapper.Map(rpGrense, SrsName, DecimalPlaces));
-
-            var rpOmrådeSosiObjects = sosiObjects[FeatureMemberName.RpOmråde];
-            var rpOmråder = rpOmrådeSosiObjects.ConvertAll(rpOmråde => _rpOmrådeMapper.Map(rpOmråde, SrsName, DecimalPlaces, rpGrenser));
-
-            var rpFormålGrenseSosiObjects = sosiObjects[FeatureMemberName.RpFormålGrense];
-            var rpFormålGrenser = rpFormålGrenseSosiObjects.ConvertAll(rpFormålGrense => _rpFormålGrenseMapper.Map(rpFormålGrense, SrsName, DecimalPlaces));
-
-            var rpArealformålOmrådeSosiObjects = sosiObjects[FeatureMemberName.RpArealformålOmråde];
-            var rpArealformålOmråder = rpArealformålOmrådeSosiObjects.ConvertAll(rpArealformålOmråde => _rpArealformålOmrådeMapper.Map(rpArealformålOmråde, SrsName, DecimalPlaces, rpFormålGrenser));
-
-            var rpSikringGrenseObjects = sosiObjects["RpSikringGrense"];
-            var rpSikringGrenser = rpSikringGrenseObjects.ConvertAll(sosiObject => _rpSikringGrenseMapper.Map(sosiObject, SrsName, DecimalPlaces));
-
-            var rpSikringSoneObjects = sosiObjects["RpSikringSone"];
-            var rpSikringSoner = rpSikringGrenseObjects.ConvertAll(sosiObject => _rpSikringSoneMapper.Map(sosiObject, SrsName, DecimalPlaces, rpSikringGrenser));
-
-            var b = rpArealformålOmråder.First();*/
-
-            return Ok();
+            return File(memoryStream, "application/xml+gml", $"{Path.GetFileNameWithoutExtension(sosiFile.FileName)}.gml");
         }
       
         public class SosiDocument

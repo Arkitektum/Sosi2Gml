@@ -37,6 +37,10 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
         public override string FeatureName => "Arealplan";
 
+        public override void AddAssociations(List<Feature> features)
+        {
+        }
+
         public override XElement ToGml()
         {
             var featureMember = new XElement(AppNs + FeatureName, new XAttribute(GmlNs + "id", GmlId));

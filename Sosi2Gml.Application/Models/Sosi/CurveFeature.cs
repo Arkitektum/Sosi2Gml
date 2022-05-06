@@ -1,5 +1,4 @@
-﻿using OSGeo.OGR;
-using Sosi2Gml.Application.Helpers;
+﻿using Sosi2Gml.Application.Helpers;
 using Sosi2Gml.Application.Models.Geometries;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Helpers.MapperHelper;

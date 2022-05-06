@@ -27,7 +27,7 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
         public override XElement ToGml()
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 }

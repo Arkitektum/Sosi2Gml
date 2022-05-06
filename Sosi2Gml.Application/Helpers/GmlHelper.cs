@@ -1,11 +1,29 @@
 ﻿using Sosi2Gml.Application.Constants;
 using Sosi2Gml.Application.Models.Geometries;
+using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
 
 namespace Sosi2Gml.Application.Helpers
 {
     public class GmlHelper
     {
+        public static string CreateGmlId()
+        {
+            return $"_{Guid.NewGuid()}";
+        }
+
+        public static XElement CreateEnvelope(Envelope envelope, string srsName)
+        {
+            return new XElement(Namespace.GmlNs + "boundedBy",
+                new XElement(Namespace.GmlNs + "Envelope",
+                    new XAttribute("srsName", srsName),
+                    new XAttribute("srsDimension", 2),
+                    new XElement(Namespace.GmlNs + "lowerCorner", FormattableString.Invariant($"{envelope.LowerCorner.X} {envelope.LowerCorner.Y}")),
+                    new XElement(Namespace.GmlNs + "upperCorner", FormattableString.Invariant($"{envelope.UpperCorner.X} {envelope.UpperCorner.Y}"))
+                )
+            );
+        }
+
         public static XElement CreateXLink(XName name, string gmlId)
         {
             return new XElement(name,

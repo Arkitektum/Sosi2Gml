@@ -28,7 +28,7 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
                 {
                     Utnyttingstype = sosiObject.GetValue("...UTNTYP"),
                     Utnyttingstall = sosiObject.GetValue("...UTNTALL"),
-                    UtnyttingstallMinimum = sosiObject.GetValue("...UTNTALL_MIN"),
+                    UtnyttingstallMinimum = sosiObject.GetValue("...UTNTALL_MIN")
                 });
             }
 
@@ -48,6 +48,18 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         public List<RpPåskrift> Påskrifter { get; set; } = new();
 
         public override string FeatureName => "RpArealformålOmråde";
+
+        public override void AddAssociations(List<Feature> features)
+        {
+            var planområder = features.OfType<RpOmråde>().ToList();
+
+            if (planområder.Count == 1)
+                Planområde = planområder.First();
+            else
+                Planområde = planområder.SingleOrDefault(planområde => planområde.Geometry.Intersects(Geometry));
+
+            Planområde.Formål.Add(this);
+        }
 
         public override XElement ToGml()
         {
@@ -85,11 +97,11 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
             if (AvgrensesAv.Any())
                 featureMember.Add(AvgrensesAv.Select(formålGrense => CreateXLink(AppNs + "avgrensesAv", formålGrense.GmlId)));
+            
+            featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
 
-            //featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
-
-            /*if (AvgrensesAv.Any())
-                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(AppNs + "påskrift", påskrift.)));*/
+            if (Påskrifter.Any())
+                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(AppNs + "påskrift", påskrift.GmlId)));
 
             return featureMember;
         }
