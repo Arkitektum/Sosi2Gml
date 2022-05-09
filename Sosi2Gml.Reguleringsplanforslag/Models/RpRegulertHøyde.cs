@@ -1,6 +1,8 @@
 ﻿using Sosi2Gml.Application.Attributes;
+using Sosi2Gml.Application.Models.Features;
 using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
+using static Sosi2Gml.Application.Helpers.GeometryHelper;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
 using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
@@ -21,18 +23,14 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         public string Høydereferansesystem { get; set; }
         public string TypeHøyde { get; } = "GH";
         public RpOmråde Planområde { get; set; }
+        public List<RpPåskrift> Påskrifter { get; set; } = new();
 
         public override void AddAssociations(List<Feature> features)
         {
-            var planområder = features.OfType<RpOmråde>().ToList();
-
-            if (planområder.Count == 1)
-                Planområde = planområder.First();
-            else
-                Planområde = planområder.FirstOrDefault(planområde => planområde.Geometry?.Intersects(Geometry) ?? false);
+            Planområde = GetClosestFeature<RpOmråde>(features, Geometry);
 
             if (Planområde != null)
-                Planområde.RegulertHøyde.Add(this);
+                Planområde.RegulerteHøyder.Add(this);
         }
 
         public override XElement ToGml(XNamespace appNs)
@@ -58,6 +56,9 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
             if (Planområde != null)
                 featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
+
+            foreach (var påskrift in Påskrifter)
+                featureMember.Add(CreateXLink(appNs + "påskrift", påskrift.GmlId));
 
             return featureMember;
         }

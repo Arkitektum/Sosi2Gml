@@ -13,7 +13,6 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         }
 
         public override string FeatureName => "RpBestemmelseGrense";
-
         public override XElement ToGml(XNamespace appNs) => null;
     }
 }

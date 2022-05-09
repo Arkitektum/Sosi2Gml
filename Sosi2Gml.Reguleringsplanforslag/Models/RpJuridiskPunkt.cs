@@ -3,6 +3,8 @@ using Sosi2Gml.Application.Models.Geometries;
 using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
+using static Sosi2Gml.Application.Helpers.GeometryHelper;
+using Sosi2Gml.Application.Models.Features;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -22,15 +24,10 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
         public override void AddAssociations(List<Feature> features)
         {
-            var planområder = features.OfType<RpOmråde>().ToList();
-
-            if (planområder.Count == 1)
-                Planområde = planområder.First();
-            else
-                Planområde = planområder.FirstOrDefault(planområde => planområde.Geometry?.Intersects(Geometry) ?? false);
+            Planområde = GetClosestFeature<RpOmråde>(features, Geometry);
 
             if (Planområde != null)
-                Planområde.JuridiskPunkt.Add(this);
+                Planområde.JuridiskePunkt.Add(this);
         }
 
         public override XElement ToGml(XNamespace appNs)

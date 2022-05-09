@@ -13,8 +13,8 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             Gjennomføring = sosiObject.GetValue("..RPGJENNOMFØRING");
         }
 
-        public string Gjennomføring { get; set; }
         public override string FeatureName => "RpGjennomføringSone";
+        public string Gjennomføring { get; set; }
 
         public override XElement ToGml(XNamespace appNs)
         {

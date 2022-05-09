@@ -1,8 +1,9 @@
-﻿using Sosi2Gml.Application.Models.Sosi;
+﻿using Sosi2Gml.Application.Models.Features;
+using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
-using static Sosi2Gml.Application.Helpers.MapperHelper;
+using static Sosi2Gml.Application.Helpers.SosiHelper;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -19,10 +20,10 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             Plantype = sosiObject.GetValue("..PLANTYPE");
             Plannavn = sosiObject.GetValue("..PLANNAVN");
             Planstatus = sosiObject.GetValue("..PLANSTAT");
-            OmPlanbestemmelser = sosiObject.GetValue("..PLANBEST");
             Lovreferanse = sosiObject.GetValue("..LOVREFERANSE");
         }
 
+        public override string FeatureName => "Arealplan";
         public Identifikasjon Identifikasjon { get; set; }
         public DateTime Oppdateringsdato { get; set; }
         public string Kommunenummer { get; set; }
@@ -30,11 +31,9 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         public string Plantype { get; set; }
         public string Plannavn { get; set; }
         public string Planstatus { get; set; }
-        public string OmPlanbestemmelser { get; set; }
+        public string OmPlanbestemmelser { get; } = "4";
         public string Lovreferanse { get; set; }
         public List<RpOmråde> RpOmråder { get; set; } = new();
-
-        public override string FeatureName => "Arealplan";
 
         public override void AddAssociations(List<Feature> features)
         {

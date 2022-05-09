@@ -1,4 +1,4 @@
-﻿using Sosi2Gml.Application.Models;
+﻿using Sosi2Gml.Application.Models.Features;
 using System.Xml.Linq;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models

@@ -1,9 +1,10 @@
 ﻿using Sosi2Gml.Application.Models.Geometries;
 using System.Xml.Linq;
-using static Sosi2Gml.Application.Helpers.MapperHelper;
+using static Sosi2Gml.Application.Helpers.SosiHelper;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
+using Sosi2Gml.Application.Models.Sosi;
 
-namespace Sosi2Gml.Application.Models.Sosi
+namespace Sosi2Gml.Application.Models.Features
 {
     public abstract class PointFeature : MapFeature
     {

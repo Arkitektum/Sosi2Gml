@@ -36,8 +36,8 @@ namespace Sosi2Gml.Application.Helpers
         {
             return new XElement(Namespace.GmlNs + "Point",
                 new XAttribute(Namespace.GmlNs + "id", gmlId),
-                new XAttribute("srsDimension", 2),
                 new XAttribute("srsName", srsName),
+                new XAttribute("srsDimension", 2),
                 new XElement(Namespace.GmlNs + "pos",
                     point.ToString()
                 )
@@ -48,8 +48,8 @@ namespace Sosi2Gml.Application.Helpers
         {
             return new XElement(Namespace.GmlNs + "LineString",
                 new XAttribute(Namespace.GmlNs + "id", gmlId),
-                new XAttribute("srsDimension", 2),
                 new XAttribute("srsName", srsName),
+                new XAttribute("srsDimension", 2),
                 new XElement(Namespace.GmlNs + "posList",
                     string.Join(" ", points.Select(point => point.ToString()))
                 )
@@ -60,8 +60,8 @@ namespace Sosi2Gml.Application.Helpers
         {
             return new XElement(Namespace.GmlNs + "Curve",
                 new XAttribute(Namespace.GmlNs + "id", gmlId),
-                new XAttribute("srsDimension", 2),
                 new XAttribute("srsName", srsName),
+                new XAttribute("srsDimension", 2),
                 new XElement(Namespace.GmlNs + "segments",
                     segments
                 )
@@ -124,6 +124,20 @@ namespace Sosi2Gml.Application.Helpers
             multiSurface.Add(new XElement(Namespace.GmlNs + "surfaceMember", polygon));
 
             return multiSurface;
+        }
+
+        public static IEnumerable<XElement> CreateSurfaceRing(List<CurveReference> curveReferences)
+        {
+            return curveReferences
+                .Select(curveReference =>
+                {
+                    var points = curveReference.Reversed ? Enumerable.Reverse(curveReference.Feature.Points) : curveReference.Feature.Points;
+
+                    if (curveReference.Feature.CartographicElementType == CartographicElementType.Kurve)
+                        return CreateLineStringSegment(points);
+
+                    return CreateArc(points);
+                });
         }
     }
 }

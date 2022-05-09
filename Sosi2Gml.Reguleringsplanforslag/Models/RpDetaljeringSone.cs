@@ -13,8 +13,8 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             Detaljering = sosiObject.GetValue("..RPDETALJERING");
         }
 
-        public string Detaljering { get; set; }
         public override string FeatureName => "RpDetaljeringSone";
+        public string Detaljering { get; set; }
 
         public override XElement ToGml(XNamespace appNs)
         {

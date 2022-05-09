@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Sosi2Gml.Application.Helpers;
+using Sosi2Gml.Application.Models.Features;
 using Sosi2Gml.Application.Models.Sosi;
 using Sosi2Gml.Reguleringsplanforslag.Models;
+using Sosi2Gml.Reguleringsplanforslag.Services;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -14,9 +16,12 @@ namespace Sosi2Gml.Controllers
     public class TestController : ControllerBase
     {
         private static Regex _sosiObjectRegex = new(@"^\.[A-Z∆ÿ≈]+", RegexOptions.Compiled);
+        private readonly IRpfSosi2GmlService _rpfSosi2GmlService;
 
-        public TestController()
+        public TestController(
+            IRpfSosi2GmlService rpfSosi2GmlService)
         {
+            _rpfSosi2GmlService = rpfSosi2GmlService;
         }
 
         private T Map<T>(SosiObject sosiObject) where T : Feature, new()
@@ -122,12 +127,15 @@ namespace Sosi2Gml.Controllers
         [HttpPost]
         public async Task<IActionResult> Sosi2Gml(IFormFile sosiFile)
         {
+            var ms = await _rpfSosi2GmlService.Sosi2GmlAsync(sosiFile);
             var document = await ReadSosiFileAsync(sosiFile);
             var features = new List<Feature>();
 
             MapFeature<Arealplan>(document, document => new(document.GetSosiObjects<RpOmrÂde>().First()), features);
             MapCurveAndSurfaceFeatures<RpGrense, RpOmrÂde>(document, features);
             MapCurveAndSurfaceFeatures<RpFormÂlGrense, RpArealformÂlOmrÂde>(document, features);
+            MapCurveAndSurfaceFeatures<RpBestemmelseGrense, RpBestemmelseOmrÂde>(document, features);
+            MapCurveAndSurfaceFeatures<PblMidlByggAnleggGrense, RpBestemmelseMidlByggAnlegg>(document, features);
             MapCurveAndSurfaceFeatures<RpAngittHensynGrense, RpAngittHensynSone>(document, features);
             MapCurveAndSurfaceFeatures<RpBÂndleggingGrense, RpBÂndleggingSone>(document, features);
             MapCurveAndSurfaceFeatures<RpDetaljeringGrense, RpDetaljeringSone>(document, features);
@@ -136,14 +144,12 @@ namespace Sosi2Gml.Controllers
             MapCurveAndSurfaceFeatures<RpInfrastrukturGrense, RpInfrastrukturSone>(document, features);
             MapCurveAndSurfaceFeatures<RpSikringGrense, RpSikringSone>(document, features);
             MapCurveAndSurfaceFeatures<RpSt¯yGrense, RpSt¯ySone>(document, features);
+            MapCurveFeatures<RpRegulertH¯yde>(document, features);
             MapCurveFeatures<RpJuridiskLinje>(document, features);
-            //MapCurveFeatures<RpRegulertH¯yde>(document, features);
             MapPointFeatures<RpJuridiskPunkt>(document, features);
             MapPointFeatures<RpPÂskrift>(document, features);
 
-            var s = DateTime.Now;
-            features.ForEach(feature => feature.AddAssociations(features));
-            var e = DateTime.Now.Subtract(s).TotalSeconds;
+            Parallel.ForEach(features, feature => feature.AddAssociations(features));
 
             var memoryStream = await CreateGmlDocument(document, features);
 
@@ -171,7 +177,7 @@ namespace Sosi2Gml.Controllers
 
             public List<SosiObject> GetSosiObjects<T>() where T : Feature
             {
-                var objectName = MapperHelper.GetSosiObjectName<T>();
+                var objectName = SosiHelper.GetSosiObjectName<T>();
 
                 if (SosiObjects.TryGetValue(objectName, out var sosiObjects))
                     return sosiObjects;
@@ -179,7 +185,7 @@ namespace Sosi2Gml.Controllers
                 return new();
             }
 
-            public static SosiDocument Create(Dictionary<string, List<string>> sosiLines)
+            /*public static SosiDocument Create(Dictionary<string, List<string>> sosiLines)
             {
                 var sosiObjects = sosiLines
                     .Select(kvp => SosiObject.Create(kvp.Key, kvp.Value))
@@ -207,7 +213,7 @@ namespace Sosi2Gml.Controllers
                     SosiVersion = sosiVersion,
                     SosiObjects = sosiObjects
                 };
-            }
+            }*/
         }
 
         private static async Task<SosiDocument> ReadSosiFileAsync(IFormFile sosiFile)
@@ -224,7 +230,7 @@ namespace Sosi2Gml.Controllers
                     sosiLines.Last().Value.Add(line);
             }
 
-            return SosiDocument.Create(sosiLines);
+            return null;
         }
     }
 }

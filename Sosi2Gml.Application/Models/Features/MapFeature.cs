@@ -1,10 +1,11 @@
 ﻿using OSGeo.OGR;
 using Sosi2Gml.Application.Helpers;
+using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Constants.Namespace;
-using static Sosi2Gml.Application.Helpers.MapperHelper;
+using static Sosi2Gml.Application.Helpers.SosiHelper;
 
-namespace Sosi2Gml.Application.Models.Sosi
+namespace Sosi2Gml.Application.Models.Features
 {
     public abstract class MapFeature : Feature
     {
@@ -17,7 +18,7 @@ namespace Sosi2Gml.Application.Models.Sosi
                 Kvalitet = new Kvalitet(sosiObject);
 
             FørsteDigitaliseringsdato = SosiDateToDateTime(sosiObject.GetValue("..FØRSTEDIGITALISERINGSDATO"));
-            Oppdateringsdato = SosiDateToDateTime(sosiObject.GetValue("..OPPDATERINGSDATO")).Value;
+            Oppdateringsdato = SosiDateToDateTime(sosiObject.GetValue("..OPPDATERINGSDATO")).GetValueOrDefault();
             CartographicElementType = ParseCartographicElementType(sosiObject.ElementType);
             SequenceNumber = sosiObject.SequenceNumber;
             SrsName = srsName;

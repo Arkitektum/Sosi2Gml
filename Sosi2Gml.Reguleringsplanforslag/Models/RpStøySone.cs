@@ -13,8 +13,8 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             Støy = sosiObject.GetValue("..RPSTØY");
         }
 
-        public string Støy { get; set; }
         public override string FeatureName => "RpStøySone";
+        public string Støy { get; set; }
 
         public override XElement ToGml(XNamespace appNs)
         {

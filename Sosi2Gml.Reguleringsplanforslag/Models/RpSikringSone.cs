@@ -1,9 +1,6 @@
 ﻿using Sosi2Gml.Application.Attributes;
 using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
-using static Sosi2Gml.Application.Constants.Namespace;
-using static Sosi2Gml.Application.Helpers.MapperHelper;
-using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -16,8 +13,8 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             Sikring = sosiObject.GetValue("..RPSIKRING");
         }
 
-        public string Sikring { get; set; }
         public override string FeatureName => "RpSikringSone";
+        public string Sikring { get; set; }
 
         public override XElement ToGml(XNamespace appNs)
         {

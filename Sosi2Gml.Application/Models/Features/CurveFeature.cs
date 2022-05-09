@@ -1,7 +1,8 @@
 ﻿using Sosi2Gml.Application.Helpers;
+using Sosi2Gml.Application.Models.Features;
 using Sosi2Gml.Application.Models.Geometries;
 using System.Xml.Linq;
-using static Sosi2Gml.Application.Helpers.MapperHelper;
+using static Sosi2Gml.Application.Helpers.SosiHelper;
 
 namespace Sosi2Gml.Application.Models.Sosi
 {

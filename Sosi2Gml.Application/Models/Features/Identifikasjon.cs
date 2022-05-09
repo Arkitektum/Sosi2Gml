@@ -1,6 +1,7 @@
-﻿using System.Xml.Linq;
+﻿using Sosi2Gml.Application.Models.Sosi;
+using System.Xml.Linq;
 
-namespace Sosi2Gml.Application.Models.Sosi
+namespace Sosi2Gml.Application.Models.Features
 {
     public class Identifikasjon : GmlElement
     {

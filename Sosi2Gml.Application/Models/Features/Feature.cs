@@ -1,7 +1,8 @@
-﻿using System.Xml.Linq;
+﻿using Sosi2Gml.Application.Models.Sosi;
+using System.Xml.Linq;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
 
-namespace Sosi2Gml.Application.Models.Sosi
+namespace Sosi2Gml.Application.Models.Features
 {
     public abstract class Feature
     {

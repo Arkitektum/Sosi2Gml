@@ -13,8 +13,8 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             Fare = sosiObject.GetValue("..RPFARE");
         }
 
-        public string Fare { get; set; }
         public override string FeatureName => "RpFareSone";
+        public string Fare { get; set; }
 
         public override XElement ToGml(XNamespace appNs)
         {

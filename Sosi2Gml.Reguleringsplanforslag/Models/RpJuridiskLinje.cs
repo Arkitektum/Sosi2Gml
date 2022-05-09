@@ -1,9 +1,9 @@
 ﻿using Sosi2Gml.Application.Attributes;
 using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
-using static Sosi2Gml.Application.Constants.Namespace;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
-using static Sosi2Gml.Application.Helpers.MapperHelper;
+using static Sosi2Gml.Application.Helpers.GeometryHelper;
+using Sosi2Gml.Application.Models.Features;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -18,18 +18,14 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         public override string FeatureName => "RpJuridiskLinje";
         public string JuridiskLinje { get; set; }
         public RpOmråde Planområde { get; set; }
+        public RpPåskrift Påskrift { get; set; }
 
         public override void AddAssociations(List<Feature> features)
         {
-            var planområder = features.OfType<RpOmråde>().ToList();
-
-            if (planområder.Count == 1)
-                Planområde = planområder.First();
-            else
-                Planområde = planområder.FirstOrDefault(planområde => planområde.Geometry?.Intersects(Geometry) ?? false);
+            Planområde = GetClosestFeature<RpOmråde>(features, Geometry);
 
             if (Planområde != null)
-                Planområde.JuridiskLinje.Add(this);
+                Planområde.JuridiskeLinjer.Add(this);
         }
 
         public override XElement ToGml(XNamespace appNs)
@@ -42,6 +38,9 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
             if (Planområde != null)
                 featureMember.Add(CreateXLink(appNs + "planområde", Planområde.GmlId));
+
+            if (Påskrift != null)
+                featureMember.Add(CreateXLink(appNs + "påskrift", Påskrift.GmlId));
 
             return featureMember;
         }

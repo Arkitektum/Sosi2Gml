@@ -13,8 +13,8 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             Båndlegging = sosiObject.GetValue("..RPBÅNDLEGGING");
         }
 
-        public string Båndlegging { get; set; }
         public override string FeatureName => "RpBåndleggingSone";
+        public string Båndlegging { get; set; }
 
         public override XElement ToGml(XNamespace appNs)
         {

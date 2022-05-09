@@ -2,6 +2,8 @@
 using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
+using static Sosi2Gml.Application.Helpers.GeometryHelper;
+using Sosi2Gml.Application.Models.Features;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -27,59 +29,63 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
         public override void AddAssociations(List<Feature> features)
         {
-            if (PåskriftType == "1" || PåskriftType == "4" || PåskriftType == "6" || PåskriftType == "9")
+            switch (PåskriftType)
             {
-                var planområder = features.OfType<RpOmråde>().ToList();
+                case "1" or "3" or "5":
+                    Formål = GetClosestFeature<RpArealformålOmråde>(features, Geometry);
 
-                if (planområder.Count == 1)
-                    Planområde = planområder.First();
-                else
-                    Planområde = planområder.FirstOrDefault(planområde => planområde.Geometry?.Intersects(Geometry) ?? false);
+                    if (Formål != null)
+                    {
+                        Formål.Påskrifter.Add(this);
+                        break;
+                    }
 
-                if (Planområde != null)
-                    Planområde.Påskrifter.Add(this);
+                    Planområde = GetClosestFeature<RpOmråde>(features, Geometry);
 
-                return;
-            }
-            
-            if (PåskriftType == "2")
-            {
-                /*var bestemmelseOmråder = features.OfType<RpBestemmelseOmråde>().ToList();
-                BestemmelseOmråde = bestemmelseOmråder.SingleOrDefault(bestemmelseOmråde => bestemmelseOmråde.Geometry.Intersects(Geometry));
+                    if (Planområde != null)
+                        Planområde.Påskrifter.Add(this);
 
-                if (BestemmelseOmråde != null)
-                {
-                    BestemmelseOmråde.Påskrifter.Add(this);
-                    return;
-                }*/
+                    break;
+                case "2":
+                    BestemmelseOmråde = GetClosestFeature<RpBestemmelseOmråde>(features, Geometry);
 
-                var hensynSoner = features.OfType<RpHensynSone>().ToList();
-                Hensyn = hensynSoner.FirstOrDefault(hensynSone => hensynSone.HensynSonenavn == Tekststreng);
+                    if (BestemmelseOmråde != null)
+                    {
+                        BestemmelseOmråde.Påskrifter.Add(this);
+                        break;
+                    }
 
-                if (Hensyn != null)
-                {
-                    Hensyn.Påskrifter.Add(this);
-                    return;
-                }
+                    Hensyn = GetClosestFeature<RpHensynSone>(features, Geometry);
 
-                var formålOmråder = features.OfType<RpArealformålOmråde>().ToList();
-                Formål = formålOmråder.FirstOrDefault(formålOmråde => formålOmråde.Feltnavn == Tekststreng);
+                    if (Hensyn != null)
+                    {
+                        Hensyn.Påskrifter.Add(this);
+                        break;
+                    }
 
-                if (Formål != null)
-                    Formål.Påskrifter.Add(this);
+                    Formål = GetClosestFeature<RpArealformålOmråde>(features, Geometry);
 
-                return;
-            }
+                    if (Formål != null)
+                    {
+                        Formål.Påskrifter.Add(this);
+                        break;
+                    }
 
-            if (PåskriftType == "3" || PåskriftType == "5")
-            {
-                var formålOmråder = features.OfType<RpArealformålOmråde>().ToList();
-                Formål = formålOmråder.FirstOrDefault(formålOmråde => formålOmråde.Geometry?.Intersects(Geometry) ?? false);
+                    Planområde = GetClosestFeature<RpOmråde>(features, Geometry);
 
-                if (Formål != null)
-                    Formål.Påskrifter.Add(this);
+                    if (Planområde != null)
+                        Planområde.Påskrifter.Add(this);
 
-                return;
+                    break;
+                case "4" or "6" or "7" or "8" or "9":
+                    Planområde = GetClosestFeature<RpOmråde>(features, Geometry);
+
+                    if (Planområde != null)
+                        Planområde.Påskrifter.Add(this);
+
+                    break;
+                default:
+                    break;
             }
         }
 
