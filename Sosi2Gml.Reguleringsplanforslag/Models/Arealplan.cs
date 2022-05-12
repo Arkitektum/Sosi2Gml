@@ -14,7 +14,7 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
             if (sosiObject.HasValue("..IDENT"))
                 Identifikasjon = new Identifikasjon(sosiObject);
 
-            Oppdateringsdato = SosiDateToDateTime(sosiObject.GetValue("..OPPDATERINGSDATO")).Value;
+            Oppdateringsdato = SosiDateToDateTime(sosiObject.GetValue("..OPPDATERINGSDATO")).GetValueOrDefault();
             Kommunenummer = sosiObject.GetValue("...KOMM");
             Planidentifikasjon = sosiObject.GetValue("...PLANID");
             Plantype = sosiObject.GetValue("..PLANTYPE");

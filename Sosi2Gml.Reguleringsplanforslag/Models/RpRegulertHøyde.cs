@@ -4,7 +4,6 @@ using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Helpers.GeometryHelper;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
-using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -37,25 +36,25 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         {
             var featureMember = base.ToGml(appNs);
             
-            featureMember.Add(new XElement(AppNs + "senterlinje", GeomElement));
+            featureMember.Add(new XElement(appNs + "senterlinje", GeomElement));
 
-            featureMember.Add(new XElement(AppNs + "høydeFraPlanbestemmelse",
-                new XElement(AppNs + "HøydeFraPlanbestemmelse",
-                    new XElement(AppNs + "regulerthøyde", RegulertHøyde),
-                    new XElement(AppNs + "vertikalReferanse",
-                        new XElement(AppNs + "VertikalReferanse",
-                            new XElement(AppNs + "høydereferansesystem", Høydereferansesystem)
+            featureMember.Add(new XElement(appNs + "høydeFraPlanbestemmelse",
+                new XElement(appNs + "HøydeFraPlanbestemmelse",
+                    new XElement(appNs + "regulerthøyde", RegulertHøyde),
+                    new XElement(appNs + "vertikalReferanse",
+                        new XElement(appNs + "VertikalReferanse",
+                            new XElement(appNs + "høydereferansesystem", Høydereferansesystem)
                         )
                     )
                 )
             ));
 
-            featureMember.Add(new XElement(AppNs + "typeHøyde", TypeHøyde));
+            featureMember.Add(new XElement(appNs + "typeHøyde", TypeHøyde));
 
             featureMember.Add(new XComment("Pga. manglende kompabilitet mellom SOSI 4.5 og SOSI 5.0, settes \"typeHøyde\" til \"GH\" (gesimshøyde). Tilgjengelige valg er: GH, MH, TH, BH og PH."));
 
             if (Planområde != null)
-                featureMember.Add(CreateXLink(AppNs + "planområde", Planområde.GmlId));
+                featureMember.Add(CreateXLink(appNs + "planområde", Planområde.GmlId));
 
             foreach (var påskrift in Påskrifter)
                 featureMember.Add(CreateXLink(appNs + "påskrift", påskrift.GmlId));

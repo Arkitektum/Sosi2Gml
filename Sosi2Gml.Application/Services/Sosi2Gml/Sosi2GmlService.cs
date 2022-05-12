@@ -50,63 +50,7 @@ namespace Sosi2Gml.Application.Services.Sosi2Gml
             return await CreateGmlDocumentAsync(sosiDocument, settings, features);
         }
 
-        protected static List<Feature> MapFeature<TFeature>(SosiDocument document, Func<SosiDocument, TFeature> func)
-            where TFeature : Feature
-        {
-            var features = new List<Feature>();
-            var feature = func.Invoke(document);
-            features.Add(feature);
 
-            return features;
-        }
-
-        protected static List<Feature> MapPointFeatures<TPointFeature>(SosiDocument document)
-            where TPointFeature : PointFeature
-        {
-            var features = new List<Feature>();
-            var pointObjects = document.GetSosiObjects<TPointFeature>();
-
-            var pointFeatures = pointObjects
-                .ConvertAll(sosiObject => Activator.CreateInstance(typeof(TPointFeature), new object[] { sosiObject, document.SrsName, document.DecimalCount }) as TPointFeature);
-
-            features.AddRange(pointFeatures);
-
-            return features;
-        }
-
-        protected static List<Feature> MapCurveFeatures<TCurveFeature>(SosiDocument document)
-            where TCurveFeature : CurveFeature
-        {
-            var features = new List<Feature>();
-            var curveObjects = document.GetSosiObjects<TCurveFeature>();
-
-            var curveFeatures = curveObjects
-                .ConvertAll(sosiObject => Activator.CreateInstance(typeof(TCurveFeature), new object[] { sosiObject, document.SrsName, document.DecimalCount }) as TCurveFeature);
-
-            features.AddRange(curveFeatures);
-
-            return features;
-        }
-
-        protected static List<Feature> MapCurveAndSurfaceFeatures<TCurveFeature, TSurfaceFeature>(SosiDocument document)
-            where TCurveFeature : CurveFeature
-            where TSurfaceFeature : SurfaceFeature
-        {
-            var features = new List<Feature>();
-            var curveObjects = document.GetSosiObjects<TCurveFeature>();
-            var surfaceObjects = document.GetSosiObjects<TSurfaceFeature>();
-
-            var curveFeatures = curveObjects
-                .ConvertAll(sosiObject => Activator.CreateInstance(typeof(TCurveFeature), new object[] { sosiObject, document.SrsName, document.DecimalCount }) as TCurveFeature);
-
-            var surfaceFeatures = surfaceObjects
-                .ConvertAll(sosiObject => Activator.CreateInstance(typeof(TSurfaceFeature), new object[] { sosiObject, document.SrsName, document.DecimalCount, curveFeatures }) as TSurfaceFeature);
-
-            features.AddRange(curveFeatures);
-            features.AddRange(surfaceFeatures);
-
-            return features;
-        }
 
         private static async Task<MemoryStream> CreateGmlDocumentAsync(SosiDocument sosiDocument, DatasetSettings settings, List<Feature> features)
         {

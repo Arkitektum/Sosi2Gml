@@ -2,10 +2,9 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.OpenApi.Models;
 using OSGeo.OGR;
 using Serilog;
-using Sosi2Gml.Application.Models.Config;
+using Sosi2Gml.Application.Mappers;
 using Sosi2Gml.Application.Services.MultipartRequest;
-using Sosi2Gml.Application.Services.Sosi2Gml;
-using Sosi2Gml.Reguleringsplanforslag.Services;
+using Sosi2Gml.Reguleringsplanforslag.Configuration;
 using Sosi2Gml.Web.Configuration;
 using Sosi2Gml.Web.Middleware;
 using System.IO.Compression;
@@ -31,13 +30,15 @@ services.AddEndpointsApiExplorer();
 
 services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "SOSI2GML", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Arkitektum SOSI 2 GML", Version = "v1" });
     options.OperationFilter<MultipartOperationFilter>();
 });
 
 services.AddHttpContextAccessor();
 services.AddTransient<IMultipartRequestService, MultipartRequestService>();
-services.AddTransient<IRpfSosi2GmlService, RpfSosi2GmlService>();
+services.AddTransient<IGmlMapper, GmlMapper>();
+
+services.AddApplicationServicesForReguleringsplanforslag();
 
 services.ConfigureApplication(configuration);
 

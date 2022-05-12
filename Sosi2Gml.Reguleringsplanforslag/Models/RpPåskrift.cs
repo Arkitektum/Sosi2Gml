@@ -47,7 +47,9 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
 
                     break;
                 case "2":
-                    BestemmelseOmråde = GetClosestFeature<RpBestemmelseOmråde>(features, Geometry);
+                    BestemmelseOmråde = features.OfType<RpBestemmelseOmråde>()
+                        .Where(feature => feature.BestemmelseOmrådeNavn == Tekststreng)
+                        .MinBy(feature => feature.Geometry?.Distance(Geometry) ?? double.PositiveInfinity);
 
                     if (BestemmelseOmråde != null)
                     {
@@ -55,7 +57,9 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
                         break;
                     }
 
-                    Hensyn = GetClosestFeature<RpHensynSone>(features, Geometry);
+                    Hensyn = features.OfType<RpHensynSone>()
+                        .Where(feature => feature.HensynSonenavn == Tekststreng)
+                        .MinBy(feature => feature.Geometry?.Distance(Geometry) ?? double.PositiveInfinity);
 
                     if (Hensyn != null)
                     {
@@ -63,7 +67,9 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
                         break;
                     }
 
-                    Formål = GetClosestFeature<RpArealformålOmråde>(features, Geometry);
+                    Formål = features.OfType<RpArealformålOmråde>()
+                        .Where(feature => feature.Feltnavn == Tekststreng)
+                        .MinBy(feature => feature.Geometry?.Distance(Geometry) ?? double.PositiveInfinity);
 
                     if (Formål != null)
                     {

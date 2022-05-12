@@ -3,7 +3,6 @@ using Sosi2Gml.Application.Models.Features;
 using Sosi2Gml.Application.Models.Sosi;
 using System.Xml.Linq;
 using static Sosi2Gml.Application.Helpers.GmlHelper;
-using static Sosi2Gml.Reguleringsplanforslag.Constants.Namespace;
 
 namespace Sosi2Gml.Reguleringsplanforslag.Models
 {
@@ -43,38 +42,38 @@ namespace Sosi2Gml.Reguleringsplanforslag.Models
         {
             var featureMember = base.ToGml(appNs);
 
-            featureMember.Add(new XElement(AppNs + "område", GeomElement));
-            featureMember.Add(new XElement(AppNs + "vertikalnivå", Vertikalnivå));
+            featureMember.Add(new XElement(appNs + "område", GeomElement));
+            featureMember.Add(new XElement(appNs + "vertikalnivå", Vertikalnivå));
 
             if (AvgrensesAv.Any())
-                featureMember.Add(AvgrensesAv.Select(formålGrense => CreateXLink(AppNs + "avgrensesAv", formålGrense.GmlId)));
+                featureMember.Add(AvgrensesAv.Select(formålGrense => CreateXLink(appNs + "avgrensesAv", formålGrense.GmlId)));
 
             if (Arealplan != null)
-                featureMember.Add(CreateXLink(AppNs + "arealplan", Arealplan.GmlId));
+                featureMember.Add(CreateXLink(appNs + "arealplan", Arealplan.GmlId));
 
             if (MidlByggAnlegg.Any())
-                featureMember.Add(MidlByggAnlegg.Select(midlByggAnlegg => CreateXLink(AppNs + "midlByggAnlegg", midlByggAnlegg.GmlId)));
+                featureMember.Add(MidlByggAnlegg.Select(midlByggAnlegg => CreateXLink(appNs + "midlByggAnlegg", midlByggAnlegg.GmlId)));
 
             if (Påskrifter.Any())
-                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(AppNs + "påskrift", påskrift.GmlId)));
+                featureMember.Add(Påskrifter.Select(påskrift => CreateXLink(appNs + "påskrift", påskrift.GmlId)));
 
             if (Formål.Any())
-                featureMember.Add(Formål.Select(formål => CreateXLink(AppNs + "formål", formål.GmlId)));
+                featureMember.Add(Formål.Select(formål => CreateXLink(appNs + "formål", formål.GmlId)));
 
             if (RegulerteHøyder.Any())
-                featureMember.Add(RegulerteHøyder.Select(regulertHøyde => CreateXLink(AppNs + "regulertHøyde", regulertHøyde.GmlId)));
+                featureMember.Add(RegulerteHøyder.Select(regulertHøyde => CreateXLink(appNs + "regulertHøyde", regulertHøyde.GmlId)));
 
             if (Hensyn.Any())
-                featureMember.Add(Hensyn.Select(hensyn => CreateXLink(AppNs + "hensyn", hensyn.GmlId)));
+                featureMember.Add(Hensyn.Select(hensyn => CreateXLink(appNs + "hensyn", hensyn.GmlId)));
 
             if (JuridiskePunkt.Any())
-                featureMember.Add(JuridiskePunkt.Select(juridiskPunkt => CreateXLink(AppNs + "juridiskPunkt", juridiskPunkt.GmlId)));
+                featureMember.Add(JuridiskePunkt.Select(juridiskPunkt => CreateXLink(appNs + "juridiskPunkt", juridiskPunkt.GmlId)));
 
             if (JuridiskeLinjer.Any())
-                featureMember.Add(JuridiskeLinjer.Select(juridiskLinje => CreateXLink(AppNs + "juridiskLinje", juridiskLinje.GmlId)));
+                featureMember.Add(JuridiskeLinjer.Select(juridiskLinje => CreateXLink(appNs + "juridiskLinje", juridiskLinje.GmlId)));
 
             if (BestemmelseOmråder.Any())
-                featureMember.Add(BestemmelseOmråder.Select(bestemmelseOmråde => CreateXLink(AppNs + "bestemmelseOmråde", bestemmelseOmråde.GmlId)));
+                featureMember.Add(BestemmelseOmråder.Select(bestemmelseOmråde => CreateXLink(appNs + "bestemmelseOmråde", bestemmelseOmråde.GmlId)));
 
             return featureMember;
         }

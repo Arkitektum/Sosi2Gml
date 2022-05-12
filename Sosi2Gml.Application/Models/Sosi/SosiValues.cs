@@ -6,7 +6,7 @@ namespace Sosi2Gml.Application.Models.Sosi
     public class SosiValues
     {
         private static readonly Regex _propertyRegex = new(@"^\.+.*$", RegexOptions.Compiled);
-        private static readonly Regex _nameAndValueRegex = new(@"^(?<name>(\.+[A-ZÆØÅ-]+))( (?<value>.*))?", RegexOptions.Compiled);
+        private static readonly Regex _nameAndValueRegex = new(@"^(?<name>(\.+[A-ZÆØÅ_\-]+))( (?<value>.*))?", RegexOptions.Compiled);
 
         private SosiValues(List<string> lines, Dictionary<string, string> objectProperties)
         {

@@ -1,5 +1,4 @@
 ﻿using Sosi2Gml.Application.Attributes;
-using Sosi2Gml.Application.Constants;
 using Sosi2Gml.Application.Models.Features;
 using Sosi2Gml.Application.Models.Geometries;
 using Sosi2Gml.Application.Models.Sosi;
@@ -12,7 +11,9 @@ namespace Sosi2Gml.Application.Helpers
     public class SosiHelper
     {
         private static readonly Regex _curveReferencesRegex = new(@"\.\.REF(?<refs>(.*))\.\.NØ", RegexOptions.Compiled | RegexOptions.Singleline);
-        private static readonly Regex _surfaceRingRegex = new(@"(?<exterior>.*?)(?<interiors>\(.*?\))", RegexOptions.Compiled);
+        private static readonly Regex _surfaceRingRegex = new(@"(?<exterior>.*?)\((?<interiors>.*?)\)", RegexOptions.Compiled);
+        private static readonly Regex _pointsStartRegex = new(@"^\.\.NØ", RegexOptions.Compiled);
+        private static readonly Regex _pointRegex = new(@"^(?<y>\d+) (?<x>\d+)", RegexOptions.Compiled);
 
         public static string GetSosiObjectName<T>() where T : Feature
         {
@@ -60,13 +61,13 @@ namespace Sosi2Gml.Application.Helpers
             {
                 var value = sosiValues.Lines[i];
 
-                if (Regexes.PointsStartRegex.IsMatch(value))
+                if (_pointsStartRegex.IsMatch(value))
                 {
                     var pointValues = sosiValues.Lines.Skip(i);
 
                     foreach (var pointValue in pointValues)
                     {
-                        var pointMatch = Regexes.PointRegex.Match(pointValue);
+                        var pointMatch = _pointRegex.Match(pointValue);
 
                         if (pointMatch.Success)
                             points.Add(Point.Create(pointMatch.Groups["x"].Value, pointMatch.Groups["y"].Value, decimalPlaces));
