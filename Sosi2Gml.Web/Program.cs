@@ -30,7 +30,7 @@ services.AddEndpointsApiExplorer();
 
 services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Arkitektum SOSI 2 GML", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "SOSI2GML", Version = "v1" });
     options.OperationFilter<MultipartOperationFilter>();
 });
 
